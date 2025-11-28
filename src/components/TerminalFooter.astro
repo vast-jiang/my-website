@@ -1,29 +1,137 @@
 ---
+// src/components/TerminalFooter.astro
 const year = new Date().getFullYear();
 ---
-<footer class="mt-20 border-t border-dos-dim pt-6 pb-10 text-center relative overflow-hidden">
+
+<footer class="mt-20 border-t border-dos-dim pt-6 pb-10 text-center relative overflow-hidden group">
   
-  <!-- 滚动的背景字装饰 -->
+  <!-- 背景滚动装饰 -->
   <div class="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none select-none flex justify-center items-center overflow-hidden">
-    <span class="text-[10rem] font-bold whitespace-nowrap animate-pulse">SYSTEM END</span>
+    <span class="text-[8rem] md:text-[10rem] font-bold whitespace-nowrap animate-[scan_10s_linear_infinite] group-hover:pause">
+      SYSTEM MONITORING ACTIVE
+    </span>
   </div>
 
   <div class="relative z-10 flex flex-col items-center gap-4">
-    <!-- 系统状态指示灯 -->
-    <div class="flex gap-4 text-xs font-mono text-dos-dim border border-dos-dim px-4 py-1 rounded-full bg-black">
-      <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-dos-primary animate-pulse"></span> CPU: 3%</span>
-      <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-dos-primary"></span> RAM: 64KB</span>
-      <span class="flex items-center gap-1">TEMP: NORMAL</span>
+    
+    <!-- 动态系统状态条 -->
+    <div id="sys-bar" class="flex flex-wrap justify-center gap-3 md:gap-6 text-xs font-mono text-dos-dim border border-dos-dim px-4 py-1.5 rounded-full bg-black/80 backdrop-blur shadow-[0_0_10px_rgba(0,143,17,0.2)]">
+      
+      <!-- 1. 网络延迟 (真实) -->
+      <span class="flex items-center gap-1.5 min-w-[80px]">
+        <span class="w-2 h-2 rounded-full bg-dos-primary animate-pulse"></span> 
+        PING: <span id="ping-val" class="text-dos-primary font-bold">--</span>ms
+      </span>
+
+      <!-- 2. CPU 核心数 (真实) -->
+      <span class="flex items-center gap-1.5 border-l border-dos-dim/30 pl-3 md:pl-6">
+        <span class="w-1.5 h-1.5 bg-dos-dim"></span> 
+        CORES: <span id="core-val" class="text-dos-primary">--</span>
+      </span>
+
+      <!-- 3. 电池/电源状态 (真实) -->
+      <span class="flex items-center gap-1.5 border-l border-dos-dim/30 pl-3 md:pl-6">
+        <span id="bat-icon" class="text-dos-dim">⚡</span> 
+        PWR: <span id="bat-val" class="text-dos-primary">AC</span>
+      </span>
+
+      <!-- 4. 模拟负载 (随机波动) -->
+      <span class="flex items-center gap-1.5 border-l border-dos-dim/30 pl-3 md:pl-6">
+        LOAD: <span id="load-val" class="text-dos-alert font-bold">0%</span>
+      </span>
+
     </div>
 
-    <p class="text-sm opacity-60">
-      &copy; {year} VAST_JIANG. All rights reserved. <br>
-      Built with Astro & Tailwind. Hosted on Cloudflare Pages.
+    <p class="text-xs md:text-sm opacity-60 mt-2 font-mono">
+      &copy; {year} VAST_JIANG. SYSTEM SECURE. <br class="md:hidden">
+      HOSTED ON CLOUDFLARE NETWORK.
     </p>
 
-    <!-- 关机按钮 (装饰用) -->
-    <button onclick="alert('系统无法关闭。你永远无法离开赛博空间。')" class="text-xs border border-dos-alert text-dos-alert px-2 py-1 hover:bg-dos-alert hover:text-black transition uppercase">
-      [ 强制关机 ]
+    <!-- 强制关机按钮 (彩蛋) -->
+    <button id="shutdown-btn" class="mt-2 text-[10px] border border-dos-alert text-dos-alert px-3 py-1 hover:bg-dos-alert hover:text-black transition uppercase cursor-pointer">
+      [ FORCE SHUTDOWN ]
     </button>
   </div>
 </footer>
+
+<script>
+  // 1. 定义一个辅助函数，专门安全地设置文字，解决大部分 "可能为 null" 报错
+  function setSafeText(id: string, text: string) {
+    const el = document.getElementById(id);
+    if (el) el.innerText = text;
+  }
+
+  // 2. 获取真实核心数
+  const cores = navigator.hardwareConcurrency || 'N/A';
+  // 修复：使用辅助函数
+  setSafeText('core-val', String(cores));
+
+  // 3. 获取真实网络延迟 (Ping)
+  const measurePing = async () => {
+    const start = performance.now();
+    try {
+      await fetch(window.location.href, { method: 'HEAD', cache: 'no-cache' });
+      const end = performance.now();
+      const ping = Math.round(end - start);
+      
+      const el = document.getElementById('ping-val');
+      if (el) {
+        el.innerText = String(ping);
+        el.className = ping < 100 ? 'text-dos-primary font-bold' : 'text-dos-alert font-bold';
+      }
+    } catch (e) {
+      // ignore
+    }
+  };
+  measurePing();
+  setInterval(measurePing, 3000);
+
+  // 4. 获取真实电池信息
+  if ('getBattery' in navigator) {
+    // @ts-ignore
+    navigator.getBattery().then(function(battery) {
+      const updateBattery = () => {
+        const level = Math.round(battery.level * 100) + '%';
+        const charging = battery.charging;
+        
+        // 修复：使用辅助函数
+        setSafeText('bat-val', level);
+        setSafeText('bat-icon', charging ? '⚡' : '🔋');
+      };
+      updateBattery();
+      battery.addEventListener('levelchange', updateBattery);
+      battery.addEventListener('chargingchange', updateBattery);
+    });
+  }
+
+  // 5. 模拟 CPU 负载波动
+  let baseLoad = 5;
+  document.addEventListener('mousemove', () => { baseLoad = 20; });
+  
+  setInterval(() => {
+    if (baseLoad > 5) baseLoad--;
+    const noise = Math.floor(Math.random() * 10);
+    const finalLoad = baseLoad + noise;
+    
+    // 修复：使用辅助函数
+    setSafeText('load-val', finalLoad + '%');
+  }, 800);
+
+  // 6. 关机按钮彩蛋
+  const shutdownBtn = document.getElementById('shutdown-btn');
+  // 修复：先判断按钮是否存在，再添加监听事件
+  if (shutdownBtn) {
+    shutdownBtn.addEventListener('click', () => {
+      // 这里的断言 (as HTMLElement) 是为了让 TS 知道 body 肯定有 style
+      const body = document.body as HTMLElement;
+      body.style.filter = 'brightness(0) blur(10px)';
+      body.style.transform = 'scale(0.98)';
+      body.style.transition = 'all 0.5s';
+      setTimeout(() => {
+          alert('SYSTEM ERROR: Permission Denied.\n你无法逃离赛博空间。');
+          body.style.filter = '';
+          body.style.transform = '';
+      }, 1000);
+    });
+  }
+</script>

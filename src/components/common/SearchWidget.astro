@@ -1,0 +1,65 @@
+---
+// SearchWidget.astro
+---
+
+<div id="search-container" class="relative group w-full">
+  <div id="search" class="font-mono text-sm"></div>
+</div>
+
+<script is:inline>
+  window.addEventListener("load", () => {
+    // 检查是否已经加载过脚本，避免重复
+    if (document.getElementById("pagefind-script")) return;
+
+    const script = document.createElement("script");
+    script.id = "pagefind-script";
+    script.src = "/pagefind/pagefind-ui.js";
+    script.onload = () => {
+      // @ts-ignore
+      if (window.PagefindUI) {
+        new PagefindUI({
+          element: "#search",
+          showSubResults: true,
+          showImages: false,
+          translations: {
+            placeholder: "SEARCH_DATABASE...",
+            zero_results: "NO_DATA_FOUND: [SEARCH_TERM]",
+          },
+        });
+      }
+    };
+    document.head.appendChild(script);
+  });
+</script>
+
+<style is:global>
+  /* 强制覆盖 Pagefind 默认样式以适应 DOS 风格 */
+  :root {
+    --pagefind-ui-scale: 0.8;
+    --pagefind-ui-primary: #33ff00;
+    --pagefind-ui-text: #33ff00;
+    --pagefind-ui-background: #050505;
+    --pagefind-ui-border: #005f00;
+    --pagefind-ui-tag: #005f00;
+    --pagefind-ui-font: "VT323", monospace;
+  }
+  .pagefind-ui__search-input {
+    background-color: #000 !important;
+    border: 1px solid #33ff00 !important;
+    color: #33ff00 !important;
+    border-radius: 0 !important;
+  }
+  .pagefind-ui__drawer {
+    background-color: #050505 !important;
+    border: 1px solid #005f00;
+    box-shadow: 0 0 15px rgba(51, 255, 0, 0.1);
+  }
+  .pagefind-ui__result {
+    border-bottom: 1px dashed #005f00 !important;
+  }
+  .pagefind-ui__button {
+    background: #000 !important;
+    color: #33ff00 !important;
+    border: 1px solid #33ff00 !important;
+  }
+</style>

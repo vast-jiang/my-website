@@ -1,0 +1,94 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+// ✅ 路径修正
+import TerminalHeader from "../components/layout/TerminalHeader.astro";
+import TerminalFooter from "../components/layout/TerminalFooter.astro";
+import { SITE_CONFIG } from "../config/site-config";
+---
+
+<BaseLayout title="用户手册">
+  <TerminalHeader />
+
+  <main class="min-h-[60vh] max-w-4xl mx-auto">
+    <div
+      class="mb-8 border-b-2 border-dos-primary pb-2 flex justify-between items-end"
+    >
+      <h1 class="text-3xl font-bold">MAN_PAGE: USER_GUIDE</h1>
+      <span class="text-xs text-dos-dim">SECTION 1</span>
+    </div>
+
+    <div class="glass-panel p-8 space-y-6 font-mono text-dos-primary/90">
+      <section>
+        <h2
+          class="text-xl font-bold text-white mb-2 uppercase border-l-4 border-dos-dim pl-3"
+        >
+          1. NAME
+        </h2>
+        <p class="pl-4">
+          {SITE_CONFIG.author.name} - Full Stack Developer & Hardware Engineer
+        </p>
+      </section>
+
+      <section>
+        <h2
+          class="text-xl font-bold text-white mb-2 uppercase border-l-4 border-dos-dim pl-3"
+        >
+          2. SYNOPSIS
+        </h2>
+        <p class="pl-4 text-dos-dim">operator [OPTIONS]... [TARGET]</p>
+      </section>
+
+      <section>
+        <h2
+          class="text-xl font-bold text-white mb-2 uppercase border-l-4 border-dos-dim pl-3"
+        >
+          3. DESCRIPTION
+        </h2>
+        <p class="pl-4 leading-relaxed">
+          Initialization complete. Operator currently located in region {
+            SITE_CONFIG.author.location
+          }. Specializes in web technologies (Astro, React, Tailwind) and
+          embedded systems hardware design.
+          <br /><br />
+          This system interface is designed to reflect a retro-futuristic aesthetic
+          while maintaining modern performance standards.
+        </p>
+      </section>
+
+      <section>
+        <h2
+          class="text-xl font-bold text-white mb-2 uppercase border-l-4 border-dos-dim pl-3"
+        >
+          4. OPTIONS
+        </h2>
+        <ul class="pl-4 list-disc list-inside space-y-1 text-sm">
+          <li>
+            <span class="text-white font-bold">-p, --projects</span> : List all active
+            projects.
+          </li>
+          <li>
+            <span class="text-white font-bold">-c, --contact</span> : Initiate communication
+            protocol.
+          </li>
+          <li>
+            <span class="text-white font-bold">-h, --help</span> : Display this help
+            message.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2
+          class="text-xl font-bold text-white mb-2 uppercase border-l-4 border-dos-dim pl-3"
+        >
+          5. AUTHOR
+        </h2>
+        <p class="pl-4">
+          Written by {SITE_CONFIG.author.name}. Report bugs to &lt;ISSUES&gt;.
+        </p>
+      </section>
+    </div>
+  </main>
+
+  <TerminalFooter />
+</BaseLayout>

@@ -1,0 +1,67 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+// ✅ 路径修正: 指向 layout 文件夹
+import TerminalHeader from '../components/layout/TerminalHeader.astro';
+import TerminalFooter from '../components/layout/TerminalFooter.astro';
+
+// 日志数据
+const logs = [
+  { date: '2025-11-29', version: 'v1.2.0', title: 'SYSTEM UPGRADE', content: '接入 Busuanzi 真实计数器；实装 ProjectGallery 模组。' },
+  { date: '2025-11-28', version: 'v1.0.0', title: 'INITIALIZATION', content: '核心系统上线。部署于 Cloudflare Pages。完成基础架构搭建。' },
+  { date: '2025-10-15', version: 'v0.9.0', title: 'CONCEPT', content: '构思 Cyberpunk 风格 UI，确立黑绿配色方案。' },
+];
+---
+
+<BaseLayout title="系统日志">
+  <TerminalHeader />
+
+  <main class="min-h-[60vh] max-w-3xl mx-auto">
+    <div class="mb-8 border-b border-dos-dim pb-2 flex justify-between items-end">
+      <h2 class="text-2xl font-bold flex items-center gap-2">
+        <span class="w-3 h-3 bg-dos-primary animate-pulse"></span>
+        SYSTEM_LOGS
+      </h2>
+      <span class="text-xs text-dos-dim">/VAR/LOG/SYS.LOG</span>
+    </div>
+
+    <!-- 时间轴容器 -->
+    <div class="relative border-l-2 border-dos-dim/30 ml-4 space-y-8 py-4">
+      
+      {logs.map((log, index) => (
+        <div class="relative pl-8 group">
+          <!-- 时间轴节点 -->
+          <div class="absolute -left-[9px] top-0 w-4 h-4 bg-black border-2 border-dos-primary rounded-full group-hover:bg-dos-primary transition-colors duration-300"></div>
+          
+          <!-- 日志卡片 -->
+          <div class="glass-panel p-6 hover:border-dos-primary transition-all duration-300 relative overflow-hidden">
+            <!-- 背景装饰数字 -->
+            <div class="absolute right-2 top-2 text-[4rem] font-bold text-dos-dim/5 pointer-events-none">
+              {String(logs.length - index).padStart(2, '0')}
+            </div>
+
+            <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 border-b border-dos-dim/30 pb-2">
+              <h3 class="text-xl font-bold text-white group-hover:text-dos-primary transition">{log.title}</h3>
+              <div class="flex gap-3 text-xs font-mono text-dos-dim mt-1 md:mt-0">
+                <span class="bg-dos-dim/20 px-2 py-0.5 rounded">{log.date}</span>
+                <span class="border border-dos-dim px-2 py-0.5 rounded">{log.version}</span>
+              </div>
+            </div>
+            
+            <p class="text-dos-primary/80 font-mono leading-relaxed">
+              > {log.content}
+            </p>
+          </div>
+        </div>
+      ))}
+
+      <!-- 底部结束符 -->
+      <div class="relative pl-8">
+        <div class="absolute -left-[5px] top-1 w-2 h-2 bg-dos-dim rounded-full"></div>
+        <div class="text-xs text-dos-dim">END_OF_RECORDS</div>
+      </div>
+
+    </div>
+  </main>
+
+  <TerminalFooter />
+</BaseLayout>

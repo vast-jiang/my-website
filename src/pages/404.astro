@@ -1,25 +1,51 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import BaseLayout from "../layouts/BaseLayout.astro";
+// ✅ 路径修正
+import TerminalHeader from "../components/layout/TerminalHeader.astro";
 ---
 
-<BaseLayout title="ERROR">
-  <div class="h-[80vh] flex flex-col justify-center items-center text-center">
-    <h1 class="text-6xl font-bold mb-4 bg-dos-primary text-black px-4">ERROR 404</h1>
-    <p class="text-xl mb-8">Bad command or file name</p>
-    
-    <div class="border border-dos-primary p-4 max-w-md text-left">
-      <p>The system cannot find the file specified.</p>
-      <br>
-      <p>Possible causes:</p>
-      <ul class="list-disc ml-5 text-dos-dim">
-        <li>File deleted</li>
-        <li>Typing error</li>
-        <li>Disk error</li>
-      </ul>
-    </div>
+<BaseLayout title="SYSTEM ERROR">
+  <div class="min-h-screen flex flex-col">
+    <TerminalHeader />
 
-    <a href="/" class="mt-8 uppercase px-4 py-2 border border-dos-primary hover:bg-dos-primary hover:text-black transition">
-      [ REBOOT SYSTEM ]
-    </a>
+    <main
+      class="flex-1 flex flex-col items-center justify-center text-center p-4"
+    >
+      <div
+        class="border-4 border-dos-alert p-8 bg-black max-w-lg w-full relative overflow-hidden"
+      >
+        <!-- 扫描线背景 -->
+        <div
+          class="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-0 bg-[length:100%_4px,6px_100%]"
+        >
+        </div>
+
+        <h1
+          class="text-6xl font-bold text-dos-alert mb-4 relative z-10 animate-pulse"
+        >
+          404
+        </h1>
+        <div
+          class="text-2xl font-bold text-white mb-6 bg-dos-alert text-black px-2 inline-block"
+        >
+          FATAL_ERROR
+        </div>
+
+        <p
+          class="text-dos-alert font-mono text-lg mb-8 text-left leading-relaxed"
+        >
+          > A fatal exception has occurred at address 0x00404.<br />
+          > The requested resource could not be found.<br />
+          > System will restart in safe mode...
+        </p>
+
+        <a
+          href="/"
+          class="inline-block border border-dos-alert text-dos-alert px-6 py-2 hover:bg-dos-alert hover:text-black transition uppercase font-bold text-sm"
+        >
+          [ REBOOT SYSTEM ]
+        </a>
+      </div>
+    </main>
   </div>
 </BaseLayout>

@@ -1,0 +1,28 @@
+---
+interface Props {
+  src: string;
+  alt: string;
+  className?: string;
+}
+const { src, alt, className } = Astro.props;
+---
+
+<div class={`relative overflow-hidden ${className}`}>
+  <img
+    src={src}
+    alt={alt}
+    class="w-full h-full object-cover transition duration-500"
+    onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden'); this.nextElementSibling.classList.add('flex');"
+    loading="lazy"
+  />
+
+  <!-- Fallback Placeholder (默认隐藏) -->
+  <div
+    class="hidden absolute inset-0 bg-gray-900 flex-col items-center justify-center border border-red-500/50 p-4 text-center"
+  >
+    <span class="text-red-500 font-bold text-xs animate-pulse">ERROR 404</span>
+    <span class="text-red-400/70 text-[10px] mt-1 font-mono break-all"
+      >MISSING: {src.split("/").pop()}</span
+    >
+  </div>
+</div>

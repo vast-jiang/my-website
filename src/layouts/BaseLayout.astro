@@ -1,18 +1,127 @@
 ---
-import '../styles/global.css';
-const { title = "SYSTEM" } = Astro.props;
+import "../styles/global.css";
+// 路径修正：引用 system 文件夹下的组件
+import CommandCenter from "../components/system/CommandCenter.astro";
+import BaseHead from "../components/common/BaseHead.astro";
+import { ViewTransitions } from "astro:transitions";
+import { SITE_CONFIG } from "../config/site-config";
+
+const { title = SITE_CONFIG.title, description = SITE_CONFIG.description } =
+  Astro.props;
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-cn">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title} | DOS_SHELL</title>
-    <!-- 👇 新增：引入不蒜子计数服务脚本 (异步加载，不影响速度) -->
-    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <BaseHead title={title} description={description} />
+    <!-- 不蒜子统计 -->
+    <script
+      async
+      src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <ViewTransitions />
   </head>
-  <body class="crt min-h-screen flex flex-col p-4 md:p-8 max-w-5xl mx-auto selection:bg-dos-primary selection:text-black">
-    <slot />
+  <body class="crt bg-dos-bg overflow-x-hidden cursor-crosshair">
+    <!-- 核心容器 -->
+    <div
+      id="app-container"
+      class="crt-screen min-h-screen flex flex-col p-2 md:p-8 max-w-7xl mx-auto selection:bg-dos-primary selection:text-black pb-24 md:pb-0"
+    >
+      <div transition:animate="fade">
+        <slot />
+      </div>
+
+      <div transition:persist>
+        <CommandCenter />
+      </div>
+    </div>
+
+    <!-- 鼠标拖尾脚本 -->
+    <script>
+      interface Point {
+        x: number;
+        y: number;
+        node: HTMLDivElement;
+        offsetX: number;
+        offsetY: number;
+      }
+
+      const TRAIL_LENGTH = 12;
+      const LAG_FACTOR = 0.3;
+
+      const dots: Point[] = [];
+      let isMoving = false;
+      let hideTimer: any;
+
+      for (let i = 0; i < TRAIL_LENGTH; i++) {
+        const node = document.createElement("div");
+        const size = 8 - i * 0.5;
+        const radius = size / 2;
+
+        node.className =
+          "fixed top-0 left-0 rounded-full pointer-events-none z-[9999] mix-blend-screen";
+        node.style.width = `${size}px`;
+        node.style.height = `${size}px`;
+        node.style.backgroundColor = `rgba(51, 255, 0, ${1 - i / TRAIL_LENGTH})`;
+
+        if (i === 0) {
+          node.style.boxShadow = "0 0 10px 2px rgba(51, 255, 0, 0.9)";
+        }
+
+        node.style.opacity = "0";
+        node.style.willChange = "transform, opacity";
+        node.style.transition = "opacity 0.2s ease-out";
+
+        document.body.appendChild(node);
+
+        dots.push({ x: 0, y: 0, node, offsetX: radius, offsetY: radius });
+      }
+
+      const onMove = (x: number, y: number) => {
+        const head = dots[0];
+        head.x = x;
+        head.y = y;
+        head.node.style.transform = `translate3d(${x - head.offsetX}px, ${y - head.offsetY}px, 0)`;
+        head.node.style.opacity = "1";
+
+        if (!isMoving) {
+          isMoving = true;
+          loop();
+        }
+
+        dots.forEach((dot) => (dot.node.style.opacity = "1"));
+
+        clearTimeout(hideTimer);
+        hideTimer = setTimeout(() => {
+          isMoving = false;
+          dots.forEach((dot) => (dot.node.style.opacity = "0"));
+        }, 1000);
+      };
+
+      document.addEventListener("mousemove", (e) =>
+        onMove(e.clientX, e.clientY)
+      );
+      document.addEventListener(
+        "touchmove",
+        (e) => {
+          const t = e.touches[0];
+          onMove(t.clientX, t.clientY);
+        },
+        { passive: true }
+      );
+
+      function loop() {
+        if (!isMoving) return;
+        for (let i = 1; i < dots.length; i++) {
+          const curr = dots[i];
+          const prev = dots[i - 1];
+          const dx = prev.x - curr.x;
+          const dy = prev.y - curr.y;
+          curr.x += dx * LAG_FACTOR;
+          curr.y += dy * LAG_FACTOR;
+          curr.node.style.transform = `translate3d(${curr.x - curr.offsetX}px, ${curr.y - curr.offsetY}px, 0)`;
+        }
+        requestAnimationFrame(loop);
+      }
+    </script>
   </body>
 </html>

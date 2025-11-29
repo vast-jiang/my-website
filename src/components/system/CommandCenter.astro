@@ -1,0 +1,553 @@
+---
+import { MUSIC_PLAYLIST } from "../../config/site-config";
+---
+
+<!-- 1. 移动端折叠按钮 (保持不变) -->
+<button
+  id="mobile-toggle"
+  class="md:hidden fixed bottom-4 right-4 z-[91] w-12 h-12 bg-black border-2 border-dos-primary rounded-full flex items-center justify-center text-dos-primary shadow-[0_0_15px_rgba(0,143,17,0.5)] active:scale-90 transition"
+>
+  <span class="text-2xl font-bold">≡</span>
+</button>
+
+<!-- 2. 悬浮工具栏 (保持不变) -->
+<div
+  id="toolbar"
+  class="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-[90] flex flex-col gap-3 items-end font-mono transition-all duration-300 origin-bottom-right scale-0 opacity-0 md:scale-100 md:opacity-100"
+>
+  <div
+    id="music-player"
+    class="flex flex-col bg-black/90 border border-dos-dim p-3 shadow-[0_0_15px_rgba(0,143,17,0.3)] backdrop-blur-md w-56 transition-all duration-300 hover:border-dos-primary group"
+  >
+    <div
+      class="flex justify-between items-end mb-2 border-b border-dos-dim/50 pb-1"
+    >
+      <div class="flex gap-0.5 items-end h-6" id="visualizer">
+        <span
+          class="bar w-1.5 bg-dos-primary opacity-50 h-2 transition-all duration-100"
+        ></span>
+        <span
+          class="bar w-1.5 bg-dos-primary opacity-70 h-4 transition-all duration-150"
+        ></span>
+        <span
+          class="bar w-1.5 bg-dos-primary opacity-90 h-3 transition-all duration-75"
+        ></span>
+        <span
+          class="bar w-1.5 bg-dos-primary opacity-60 h-5 transition-all duration-200"
+        ></span>
+        <span
+          class="bar w-1.5 bg-dos-primary opacity-80 h-1 transition-all duration-100"
+        ></span>
+      </div>
+      <div
+        class="text-[10px] text-dos-dim group-hover:text-dos-primary text-right leading-tight"
+      >
+        <span id="track-index">TRACK 01/01</span><br />
+        <span id="status-text">READY</span>
+      </div>
+    </div>
+    <div
+      class="w-full overflow-hidden bg-dos-dim/10 border border-dos-dim/30 mb-3 py-1 relative"
+    >
+      <div
+        id="song-title"
+        class="whitespace-nowrap text-xs text-dos-primary font-bold pl-1"
+      >
+        LOADING...
+      </div>
+    </div>
+    <div class="flex items-center justify-between gap-1">
+      <button
+        id="prev-btn"
+        class="flex-1 border border-dos-dim text-dos-dim hover:text-dos-primary text-xs py-1 active:bg-dos-primary active:text-black transition"
+        >|&lt;</button
+      >
+      <button
+        id="play-btn"
+        class="flex-[2] border border-dos-primary text-dos-primary hover:bg-dos-primary hover:text-black text-sm py-1 font-bold active:scale-95 transition"
+        >▶</button
+      >
+      <button
+        id="next-btn"
+        class="flex-1 border border-dos-dim text-dos-dim hover:text-dos-primary text-xs py-1 active:bg-dos-primary active:text-black transition"
+        >&gt;|</button
+      >
+    </div>
+  </div>
+
+  <div class="flex gap-2">
+    <button
+      id="theme-btn"
+      class="bg-black/80 text-dos-dim border border-dos-dim px-3 py-1.5 text-xs hover:bg-dos-primary hover:text-black transition uppercase cursor-pointer active:scale-95"
+      >[ THEME ]</button
+    >
+    <button
+      id="term-btn"
+      class="bg-black/80 text-dos-primary border border-dos-primary px-3 py-1.5 text-xs hover:bg-white hover:text-black transition uppercase animate-pulse cursor-pointer active:scale-95"
+      >[ TERMINAL ]</button
+    >
+  </div>
+</div>
+
+<!-- 3. 全局终端窗口 (保持不变) -->
+<div
+  id="global-terminal"
+  class="fixed inset-0 z-[100] bg-black/80 hidden flex-col items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300"
+>
+  <div
+    class="w-full max-w-3xl h-[60vh] border-2 border-dos-primary bg-black flex flex-col shadow-[0_0_50px_rgba(51,255,0,0.2)] transform scale-95 transition-transform duration-300"
+    id="term-window"
+  >
+    <div
+      class="bg-dos-primary text-black px-3 py-1 flex justify-between items-center font-bold text-sm select-none"
+    >
+      <span class="flex items-center gap-2"
+        ><span class="w-2 h-2 bg-black animate-pulse"></span> ROOT@SYSTEM:~</span
+      >
+      <button
+        id="close-term"
+        class="hover:bg-black hover:text-dos-primary px-2 transition">X</button
+      >
+    </div>
+    <div
+      id="term-output"
+      class="flex-1 p-4 overflow-y-auto font-mono text-sm space-y-1 text-dos-primary/90 scrollbar-hide"
+    >
+      <div>> VAST_OS Kernel v5.0.1 Loaded.</div>
+      <div>> Audio Module: ONLINE</div>
+      <div>> Try typing 'game' to play a number guessing game.</div>
+    </div>
+    <div class="p-2 border-t border-dos-dim flex items-center gap-2 bg-black">
+      <span class="text-dos-primary font-bold animate-pulse">></span>
+      <input
+        id="term-input"
+        type="text"
+        class="flex-1 bg-transparent border-none outline-none text-dos-primary font-mono caret-dos-primary"
+        autocomplete="off"
+      />
+    </div>
+  </div>
+</div>
+
+<!-- 4. 背景动态特效 (核心优化区域) -->
+<div class="fixed inset-0 z-0 pointer-events-none overflow-hidden select-none">
+  <!-- 左侧：系统进程 (仅在大屏显示，位置居中) -->
+  <!-- 修改点: top-0 bottom-0 -> h-screen + items-center 实现垂直居中 -->
+  <!-- 修改点: opacity-30 提高可见度 -->
+  <div
+    class="absolute left-2 md:left-6 h-screen w-64 opacity-30 mix-blend-screen hidden lg:flex flex-col justify-center"
+  >
+    <!-- 遮罩：中间清晰，上下渐隐 -->
+    <div
+      class="w-full h-[70vh] overflow-hidden relative"
+      style="mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);"
+    >
+      <div
+        id="proc-list"
+        class="absolute inset-x-0 top-1/2 -translate-y-1/2 flex flex-col font-mono text-[10px] leading-relaxed text-dos-dim gap-1"
+      >
+        <!-- JS 填充 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 右侧：网络流量 (全平台显示，手机端做背景) -->
+  <!-- 修改点: hidden lg:flex -> flex (手机也显示) -->
+  <!-- 修改点: w-full (手机全宽) md:w-96 (PC限制宽度) -->
+  <!-- 修改点: 手机端 opacity-10 (不干扰阅读), PC端 opacity-30 -->
+  <div
+    class="absolute right-2 md:right-6 h-screen w-full md:w-96 flex flex-col justify-center items-end text-right opacity-10 md:opacity-30 mix-blend-screen"
+  >
+    <div
+      class="w-full h-[80vh] overflow-hidden relative"
+      style="mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);"
+    >
+      <div
+        id="net-log"
+        class="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col items-end font-mono text-[9px] md:text-[10px] leading-relaxed text-dos-dim gap-1 whitespace-pre pr-2 md:pr-0"
+      >
+        <!-- JS 填充 -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<audio id="bg-music" preload="none"></audio>
+
+<script define:vars={{ playlistData: MUSIC_PLAYLIST }}>
+  const playlist = playlistData;
+
+  // --- 移动端切换 ---
+  const mobileToggle = document.getElementById("mobile-toggle");
+  const toolbar = document.getElementById("toolbar");
+  let isToolbarVisible = false;
+
+  mobileToggle?.addEventListener("click", () => {
+    isToolbarVisible = !isToolbarVisible;
+    if (toolbar) {
+      if (isToolbarVisible) {
+        toolbar.classList.remove("scale-0", "opacity-0");
+        toolbar.classList.add("scale-100", "opacity-100");
+        mobileToggle.innerHTML = '<span class="text-xl font-bold">X</span>';
+      } else {
+        toolbar.classList.remove("scale-100", "opacity-100");
+        toolbar.classList.add("scale-0", "opacity-0");
+        mobileToggle.innerHTML = '<span class="text-2xl font-bold">≡</span>';
+      }
+    }
+  });
+
+  // --- 音乐逻辑 ---
+  const audio = document.getElementById("bg-music");
+  const playBtn = document.getElementById("play-btn");
+  const prevBtn = document.getElementById("prev-btn");
+  const nextBtn = document.getElementById("next-btn");
+  const songTitle = document.getElementById("song-title");
+  const trackIndex = document.getElementById("track-index");
+  const statusText = document.getElementById("status-text");
+  const visualizerBars = document.querySelectorAll("#visualizer .bar");
+
+  let currentTrack = 0;
+  let isPlaying = false;
+  let visualizerInterval;
+
+  function loadTrack(index) {
+    if (!audio || !songTitle || !trackIndex) return;
+    if (index < 0) index = playlist.length - 1;
+    if (index >= playlist.length) index = 0;
+    currentTrack = index;
+    audio.src = playlist[currentTrack].url;
+    audio.load();
+    songTitle.innerText = `♪ ${playlist[currentTrack].name} ♪`;
+    trackIndex.innerText = `TRACK ${String(currentTrack + 1).padStart(2, "0")}/${String(playlist.length).padStart(2, "0")}`;
+    songTitle.classList.remove("animate-[scan_8s_linear_infinite]");
+    void songTitle.offsetWidth;
+    songTitle.classList.add("animate-[scan_8s_linear_infinite]");
+  }
+
+  function togglePlay() {
+    if (!audio || !playBtn || !statusText) return;
+    if (isPlaying) {
+      audio.pause();
+      playBtn.innerText = "▶";
+      statusText.innerText = "PAUSED";
+      stopVisualizer();
+    } else {
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            playBtn.innerText = "II";
+            statusText.innerText = "PLAYING";
+            startVisualizer();
+          })
+          .catch(() => {
+            statusText.innerText = "BLOCKED";
+            logToTerm("Autoplay blocked. Click play.", false);
+          });
+      }
+    }
+    isPlaying = !isPlaying;
+  }
+
+  function nextTrack() {
+    loadTrack(currentTrack + 1);
+    if (isPlaying) {
+      isPlaying = false;
+      togglePlay();
+    }
+  }
+  function prevTrack() {
+    loadTrack(currentTrack - 1);
+    if (isPlaying) {
+      isPlaying = false;
+      togglePlay();
+    }
+  }
+
+  function startVisualizer() {
+    stopVisualizer();
+    visualizerInterval = setInterval(() => {
+      visualizerBars.forEach((bar) => {
+        bar.style.height = `${Math.random() * 1.5 + 0.2}rem`;
+      });
+    }, 150);
+  }
+  function stopVisualizer() {
+    if (visualizerInterval) clearInterval(visualizerInterval);
+    visualizerBars.forEach((bar) => {
+      bar.style.height = "0.25rem";
+    });
+  }
+
+  playBtn?.addEventListener("click", togglePlay);
+  nextBtn?.addEventListener("click", nextTrack);
+  prevBtn?.addEventListener("click", prevTrack);
+  audio?.addEventListener("ended", () => {
+    isPlaying = false;
+    nextTrack();
+  });
+  loadTrack(0);
+
+  // --- 终端逻辑 ---
+  const termOverlay = document.getElementById("global-terminal");
+  const termWindow = document.getElementById("term-window");
+  const termInput = document.getElementById("term-input");
+  const termOutput = document.getElementById("term-output");
+  let isTermOpen = false;
+  let gameActive = false;
+  let targetNum = 0;
+
+  function toggleTerm() {
+    if (!termOverlay || !termWindow) return;
+    isTermOpen = !isTermOpen;
+    if (isTermOpen) {
+      termOverlay.classList.remove("hidden", "opacity-0");
+      termOverlay.classList.add("flex");
+      termWindow.classList.remove("scale-95");
+      termWindow.classList.add("scale-100");
+      setTimeout(() => termInput?.focus(), 100);
+    } else {
+      termOverlay.classList.add("opacity-0");
+      termWindow.classList.remove("scale-100");
+      termWindow.classList.add("scale-95");
+      setTimeout(() => {
+        termOverlay.classList.add("hidden");
+        termOverlay.classList.remove("flex");
+      }, 300);
+    }
+  }
+
+  function logToTerm(text, isCmd = false) {
+    if (termOutput) {
+      const div = document.createElement("div");
+      div.innerHTML = isCmd
+        ? `<span class="text-white opacity-50">> ${text}</span>`
+        : text;
+      termOutput.appendChild(div);
+      termOutput.scrollTop = termOutput.scrollHeight;
+    }
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey && e.key === "k") || e.key === "`") {
+      e.preventDefault();
+      toggleTerm();
+    }
+    if (e.key === "Escape" && isTermOpen) toggleTerm();
+  });
+  document.getElementById("term-btn")?.addEventListener("click", toggleTerm);
+  document.getElementById("close-term")?.addEventListener("click", toggleTerm);
+
+  termInput?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      const val = termInput.value.trim();
+      const cmd = val.toLowerCase();
+      logToTerm(val, true);
+      termInput.value = "";
+
+      if (gameActive) {
+        if (cmd === "exit") {
+          gameActive = false;
+          logToTerm("Game aborted.");
+          return;
+        }
+        const guess = parseInt(cmd);
+        if (isNaN(guess)) {
+          logToTerm("Please enter a number (0-99).");
+        } else if (guess > targetNum) {
+          logToTerm("Too high! Try smaller.");
+        } else if (guess < targetNum) {
+          logToTerm("Too low! Try larger.");
+        } else {
+          logToTerm(`CORRECT! The number was ${targetNum}.`);
+          logToTerm("*** YOU WIN *** (+100 EXP)");
+          gameActive = false;
+        }
+        return;
+      }
+
+      switch (cmd) {
+        case "help":
+          logToTerm("CMDS: help, clear, theme, music, game, reboot, whoami");
+          break;
+        case "clear":
+          if (termOutput) termOutput.innerHTML = "";
+          break;
+        case "theme":
+          document.getElementById("theme-btn")?.click();
+          break;
+        case "music":
+          togglePlay();
+          break;
+        case "reboot":
+          logToTerm("System rebooting...");
+          setTimeout(() => location.reload(), 1000);
+          break;
+        case "game":
+          targetNum = Math.floor(Math.random() * 100);
+          gameActive = true;
+          logToTerm("=== GUESS THE NUMBER (0-99) ===");
+          logToTerm('Game started! Enter a number or type "exit".');
+          break;
+        case "next":
+          nextTrack();
+          break;
+        default:
+          if (cmd !== "") logToTerm(`Unknown command: '${cmd}'.`);
+      }
+    }
+  });
+
+  // 主题逻辑
+  const themes = [
+    {
+      name: "DOS_GREEN",
+      pri: "#33ff00",
+      bg: "#050505",
+      dim: "#005f00",
+      alert: "#ff3300",
+    },
+    {
+      name: "AMBER",
+      pri: "#ffb000",
+      bg: "#100b00",
+      dim: "#553300",
+      alert: "#ff0000",
+    },
+    {
+      name: "CYBER_BLUE",
+      pri: "#00f3ff",
+      bg: "#000810",
+      dim: "#004455",
+      alert: "#ff0055",
+    },
+    {
+      name: "MATRIX",
+      pri: "#ffffff",
+      bg: "#000000",
+      dim: "#444444",
+      alert: "#ff0000",
+    },
+  ];
+  let themeIdx = 0;
+  document.getElementById("theme-btn")?.addEventListener("click", () => {
+    themeIdx = (themeIdx + 1) % themes.length;
+    const t = themes[themeIdx];
+    const root = document.documentElement;
+    root.style.setProperty("--color-dos-primary", t.pri);
+    root.style.setProperty("--color-dos-bg", t.bg);
+    root.style.setProperty("--color-dos-dim", t.dim);
+    root.style.setProperty("--color-dos-alert", t.alert);
+    logToTerm(`Theme: ${t.name}`);
+  });
+
+  // ========================================================
+  // 🌟 背景日志生成逻辑
+  // ========================================================
+
+  const procList = document.getElementById("proc-list");
+  const netLog = document.getElementById("net-log");
+
+  const SYSTEM_CMDS = [
+    "systemd",
+    "kworker",
+    "node",
+    "astro",
+    "docker",
+    "redis",
+    "nginx",
+    "sshd",
+    "fail2ban",
+    "python",
+    "bash",
+    "go",
+  ];
+  const SYSTEM_USERS = ["root", "admin", "www", "db", "sys"];
+  const NET_STATUS = ["ESTABLISHED", "TIME_WAIT", "SYN_SENT", "LISTEN"];
+  const NET_PROTO = ["TCP", "UDP", "HTTP"];
+
+  const rndIP = () =>
+    `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
+  const rndHex = () =>
+    `0x${Math.floor(Math.random() * 65535)
+      .toString(16)
+      .toUpperCase()}`;
+  const pad = (str, len) => str.padEnd(len, " ");
+
+  // 1. 左侧：进程列表
+  if (procList) {
+    // 初始多填一点，保证中间有内容
+    for (let i = 0; i < 20; i++) addProcLine();
+    setInterval(() => {
+      addProcLine();
+    }, 400);
+  }
+
+  function addProcLine() {
+    if (!procList) return;
+    const pid = Math.floor(Math.random() * 9000) + 100;
+    const user = SYSTEM_USERS[Math.floor(Math.random() * SYSTEM_USERS.length)];
+    const cpu = (Math.random() * 20).toFixed(1);
+    const cmd = SYSTEM_CMDS[Math.floor(Math.random() * SYSTEM_CMDS.length)];
+    const virt = rndHex();
+
+    const line = document.createElement("div");
+    // 随机透明度，增加闪烁感
+    line.className = `flex gap-2 whitespace-nowrap ${Math.random() > 0.8 ? "opacity-100 text-dos-primary/80" : "opacity-60"}`;
+
+    line.innerHTML = `
+      <span class="w-8 text-dos-dim">${pid}</span>
+      <span class="w-10">${pad(user, 5)}</span>
+      <span class="w-10 text-dos-dim">${pad(virt, 6)}</span>
+      <span class="w-8">${pad(cpu, 4)}</span>
+      <span class="flex-1 truncate">${cmd}</span>
+    `;
+
+    // 插入到开头，产生向下滚动的效果，或者 appendChild 向上滚动
+    // 为了配合居中 masked view，appendChild (向上顶) 效果通常更好
+    procList.appendChild(line);
+
+    // 保持 DOM 数量在 25 行左右，视觉填满 70vh
+    if (procList.children.length > 25) {
+      procList.removeChild(procList.children[0]);
+    }
+  }
+
+  // 2. 右侧：网络日志
+  if (netLog) {
+    for (let i = 0; i < 20; i++) addNetLine();
+    setInterval(() => {
+      addNetLine();
+    }, 300); // 速度稍快
+  }
+
+  function addNetLine() {
+    if (!netLog) return;
+    const now = new Date();
+    const time = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}:${now.getSeconds().toString().padStart(2, "0")}`;
+    const ip = rndIP();
+    const port = [80, 443, 22, 3000][Math.floor(Math.random() * 4)];
+    const proto = NET_PROTO[Math.floor(Math.random() * NET_PROTO.length)];
+    const isWarn = Math.random() > 0.95; // 5% 概率出现警告
+    const status = isWarn
+      ? "BLOCKED"
+      : NET_STATUS[Math.floor(Math.random() * NET_STATUS.length)];
+    const color = isWarn ? "text-dos-alert font-bold" : "text-dos-dim";
+
+    const line = document.createElement("div");
+    line.className = `flex justify-end gap-2 w-full whitespace-nowrap ${Math.random() > 0.9 ? "opacity-100" : "opacity-70"}`;
+    line.innerHTML = `
+      <span class="text-dos-dim/40">[${time}]</span>
+      <span>${ip}:${port}</span>
+      <span class="text-dos-dim/60 w-8 text-center">${proto}</span>
+      <span class="${color} w-20 text-right">${status}</span>
+    `;
+
+    netLog.appendChild(line);
+
+    if (netLog.children.length > 25) {
+      netLog.removeChild(netLog.children[0]);
+    }
+  }
+</script>

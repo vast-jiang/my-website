@@ -1,0 +1,126 @@
+---
+
+---
+
+<div
+  id="boot-screen"
+  class="fixed inset-0 bg-black z-[9999] flex flex-col p-4 md:p-10 font-mono text-dos-dim text-sm md:text-base cursor-wait select-none hidden"
+>
+  <!-- 顶部 BIOS 信息 -->
+  <div class="mb-4">
+    <div class="text-dos-primary font-bold">
+      AstroBIOS (C) 2077 VAST Systems Inc.
+    </div>
+    <div>BIOS Date 01/01/77 12:00:00 Ver: 3.0.0</div>
+    <div>CPU: Neural-Link Processor @ 99.9 GHz</div>
+  </div>
+
+  <!-- 内存检测区 -->
+  <div class="mb-4">
+    Memory Test: <span id="mem-check" class="text-white">0</span> KB OK
+  </div>
+
+  <!-- 硬件列表 -->
+  <div id="hw-list" class="space-y-1 mb-8 opacity-0">
+    <div>
+      Detecting Primary Master ... <span class="text-white"
+        >VastDrive 1TB (SSD)</span>
+    </div>
+    <div>Detecting Primary Slave ... <span class="text-white">None</span></div>
+    <div>
+      Detecting Secondary Master ... <span class="text-white"
+        >Neural Net Module</span>
+    </div>
+    <div>
+      Detecting Secondary Slave ... <span class="text-white"
+        >Audio Blaster 16</span>
+    </div>
+  </div>
+
+  <!-- 加载日志 -->
+  <div id="boot-log" class="space-y-1 text-dos-primary/80"></div>
+
+  <!-- 底部提示 -->
+  <div class="fixed bottom-4 left-4 md:left-10 text-dos-dim animate-pulse">
+    Press DEL to enter SETUP
+  </div>
+</div>
+
+<script>
+  const screen = document.getElementById("boot-screen");
+  const memCheck = document.getElementById("mem-check");
+  const hwList = document.getElementById("hw-list");
+  const bootLog = document.getElementById("boot-log");
+
+  // 检查是否已经引导过
+  const hasBooted = sessionStorage.getItem("vast-os-booted");
+
+  if (!hasBooted && screen) {
+    // 1. 显示开机画面
+    screen.classList.remove("hidden");
+
+    // 2. 内存自检动画
+    let mem = 0;
+    const targetMem = 65536; // 64MB classic feel
+    const memInterval = setInterval(() => {
+      mem += 1024;
+      if (memCheck) memCheck.innerText = mem.toString();
+      if (mem >= targetMem) {
+        clearInterval(memInterval);
+        startHwCheck();
+      }
+    }, 10);
+
+    // 3. 硬件检测显示
+    function startHwCheck() {
+      if (hwList) {
+        hwList.classList.remove("opacity-0");
+        setTimeout(startKernelLoad, 800);
+      }
+    }
+
+    // 4. 内核加载日志
+    function startKernelLoad() {
+      const logs = [
+        "Loading global descriptors...",
+        "Initializing kernel...",
+        "Mounting virtual file system...",
+        "Starting network stack...",
+        "Loading user interface...",
+        "SYSTEM READY.",
+      ];
+
+      let i = 0;
+      const logInterval = setInterval(() => {
+        if (bootLog) {
+          const div = document.createElement("div");
+          div.innerText = `> ${logs[i]}`;
+          bootLog.appendChild(div);
+        }
+        i++;
+        if (i >= logs.length) {
+          clearInterval(logInterval);
+          finishBoot();
+        }
+      }, 300);
+    }
+
+    // 5. 结束引导 (已修复 TS 报错)
+    function finishBoot() {
+      // TS 保护检查：确保 screen 存在
+      if (!screen) return;
+
+      setTimeout(() => {
+        screen.style.opacity = "0";
+        screen.style.transition = "opacity 0.5s";
+        setTimeout(() => {
+          screen.style.display = "none";
+          sessionStorage.setItem("vast-os-booted", "true");
+        }, 500);
+      }, 500);
+    }
+  } else if (screen) {
+    // 如果已经引导过，直接移除 DOM
+    screen.style.display = "none";
+  }
+</script>

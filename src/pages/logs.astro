@@ -1,14 +1,34 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-// ✅ 路径修正: 指向 layout 文件夹
 import TerminalHeader from '../components/layout/TerminalHeader.astro';
 import TerminalFooter from '../components/layout/TerminalFooter.astro';
 
-// 日志数据
+// 日志数据 (按时间倒序排列)
 const logs = [
-  { date: '2025-11-29', version: 'v1.2.0', title: 'SYSTEM UPGRADE', content: '接入 Busuanzi 真实计数器；实装 ProjectGallery 模组。' },
-  { date: '2025-11-28', version: 'v1.0.0', title: 'INITIALIZATION', content: '核心系统上线。部署于 Cloudflare Pages。完成基础架构搭建。' },
-  { date: '2025-10-15', version: 'v0.9.0', title: 'CONCEPT', content: '构思 Cyberpunk 风格 UI，确立黑绿配色方案。' },
+  { 
+    date: '2025-11-30', 
+    version: 'v3.0.0', 
+    title: 'CORE_REFACTOR & VFS', 
+    content: '架构重构为 DDD 领域驱动设计；实装虚拟文件系统 (VFS) 与 CLI 2.0；新增 BIOS 开机自检动画；集成 Giscus 透明评论系统；上线标签索引系统；部署 DRM 版权防御机制。' 
+  },
+  { 
+    date: '2025-11-29', 
+    version: 'v2.5.0', 
+    title: 'FEATURE_EXPANSION', 
+    content: '接入 Busuanzi 真实流量计数器；实装 ProjectGallery 作品集模组；优化 SEO 元数据与 RSS 订阅源。' 
+  },
+  { 
+    date: '2025-11-28', 
+    version: 'v1.0.0', 
+    title: 'SYSTEM_INITIALIZATION', 
+    content: '核心系统上线。部署于 Cloudflare Pages。完成基础 CRT 视觉引擎与 Tailwind v4 架构搭建。' 
+  },
+  { 
+    date: '2025-10-15', 
+    version: 'v0.9.0', 
+    title: 'CONCEPT_PHASE', 
+    content: '构思 Cyberpunk 风格 UI，确立黑绿配色方案与终端交互逻辑。' 
+  },
 ];
 ---
 

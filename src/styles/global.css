@@ -138,3 +138,20 @@
   background-size: 100% 3px, 3px 100%;
   pointer-events: none;
 }
+
+/* 🛡️  */
+body::after {
+  content: "Theme: Astro DOS by VAST_JIANG";
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  padding: 2px 5px;
+  background: black;
+  color: #003300;
+  font-family: monospace;
+  font-size: 10px;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.1;
+  user-select: none;
+}

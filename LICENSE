@@ -1,0 +1,26 @@
+GNU GENERAL PUBLIC LICENSE
+Version 3, 29 June 2007
+
+Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+Everyone is permitted to copy and distribute verbatim copies
+of this license document, but changing it is not allowed.
+
+[此处省略标准协议正文，请务必保留标准GPLv3全文，这部分是法律基础]
+(为了文件简洁，标准正文请自行补充或保持引用，重点是下面的附加条款)
+
+====================================================================
+ADDITIONAL TERMS (Under GPLv3 Section 7):
+根据 GNU General Public License v3 第7条，本作品附加以下限制条款：
+
+1. Attribution Requirement (署名要求):
+   在任何使用本主题（无论是原版还是修改版）的公开网站中，必须在前端页面可见区域（如页脚）保留指向原作者的版权声明和链接。
+   标准格式建议："Theme by VAST_JIANG" 或 "Powered by Astro DOS Theme"。
+
+2. Anti-Circumvention (禁止规避):
+   禁止移除、隐藏或修改用于显示上述版权信息的 HTML 元素及其相关的链接属性。禁止通过 CSS (display:none) 或 JS 手段隐藏版权信息。
+
+3. Termination (终止):
+   违反上述任何条款将自动导致您根据本许可证获得的权利终止。
+
+Copyright (C) 2025 VAST_JIANG
+====================================================================

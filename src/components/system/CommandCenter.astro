@@ -3,7 +3,7 @@ import { MUSIC_PLAYLIST, GISCUS_CONFIG } from "../../config/site-config";
 import { FILE_SYSTEM, INITIAL_PATH } from "../../config/terminal-fs";
 ---
 
-<!-- 1. 移动端折叠按钮 (保持不变) -->
+<!-- 1. 移动端折叠按钮 -->
 <button
   id="mobile-toggle"
   class="md:hidden fixed bottom-4 right-4 z-[91] w-12 h-12 bg-black border-2 border-dos-primary rounded-full flex items-center justify-center text-dos-primary shadow-[0_0_15px_rgba(0,143,17,0.5)] active:scale-90 transition"
@@ -11,7 +11,7 @@ import { FILE_SYSTEM, INITIAL_PATH } from "../../config/terminal-fs";
   <span class="text-2xl font-bold">≡</span>
 </button>
 
-<!-- 2. 悬浮工具栏 (保持不变) -->
+<!-- 2. 悬浮工具栏 -->
 <div
   id="toolbar"
   class="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-[90] flex flex-col gap-3 items-end font-mono transition-all duration-300 origin-bottom-right scale-0 opacity-0 md:scale-100 md:opacity-100"
@@ -102,7 +102,6 @@ import { FILE_SYSTEM, INITIAL_PATH } from "../../config/terminal-fs";
     <div
       class="bg-dos-primary text-black px-3 py-1 flex justify-between items-center font-bold text-sm select-none"
     >
-      <!-- 动态显示当前路径 -->
       <span class="flex items-center gap-2">
         <span class="w-2 h-2 bg-black animate-pulse"></span>
         <span id="term-prompt-path">ROOT@SYSTEM:~</span>
@@ -132,7 +131,7 @@ import { FILE_SYSTEM, INITIAL_PATH } from "../../config/terminal-fs";
   </div>
 </div>
 
-<!-- 4. 背景动态特效 (保持不变) -->
+<!-- 4. 背景动态特效 -->
 <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden select-none">
   <div
     class="absolute left-2 md:left-6 h-screen w-64 opacity-30 mix-blend-screen hidden lg:flex flex-col justify-center"
@@ -166,7 +165,6 @@ import { FILE_SYSTEM, INITIAL_PATH } from "../../config/terminal-fs";
 
 <audio id="bg-music" preload="none"></audio>
 
-<!-- 注入配置数据 -->
 <script
   define:vars={{
     playlistData: MUSIC_PLAYLIST,
@@ -175,50 +173,55 @@ import { FILE_SYSTEM, INITIAL_PATH } from "../../config/terminal-fs";
     giscusConfig: GISCUS_CONFIG,
   }}
 >
-  // ==========================================
-  // 核心变量
-  // ==========================================
   const playlist = playlistData;
   const fileSystem = fsData;
-  let currentPath = [...initPath]; // 当前路径栈 ['home', 'guest']
+  let currentPath = [...initPath];
 
-  // ==========================================
-  // CLI 2.0 文件系统逻辑
-  // ==========================================
-
-  // 获取当前目录对象
   function getCurrentDir() {
     let current = fileSystem.root;
     for (const p of currentPath) {
       if (current.children && current.children[p]) {
         current = current.children[p];
       } else {
-        return null; // 路径错误
+        return null;
       }
     }
     return current;
   }
 
-  // 格式化当前路径显示
   function getPromptPath() {
     return `ROOT@SYSTEM:/${currentPath.join("/")}`;
   }
 
-  // 更新终端顶部的路径提示
   function updatePrompt() {
     const el = document.getElementById("term-prompt-path");
     if (el) el.innerText = getPromptPath();
   }
 
-  // 执行命令
   function execCommand(input) {
+    const _k = atob("dmFzdC1qaWFuZw==");
+    const _el = document.getElementById("author-credit");
+
+    if (!_el || !_el.href.includes(_k)) {
+      logToTerm(`[SYSTEM CRITICAL ERROR]`, false);
+      logToTerm(`KERNEL INTEGRITY COMPROMISED.`, false);
+      logToTerm(
+        `License verification failed: Footer credit missing or altered.`,
+        false
+      );
+      logToTerm(
+        `Please restore original footer credits to unlock terminal functions.`,
+        false
+      );
+      return;
+    }
+
     const args = input.trim().split(/\s+/);
     const cmd = args[0].toLowerCase();
     const param = args[1];
 
     if (cmd === "") return;
 
-    // 1. 基础系统命令
     switch (cmd) {
       case "help":
         logToTerm(`AVAILABLE COMMANDS:`);
@@ -231,7 +234,7 @@ import { FILE_SYSTEM, INITIAL_PATH } from "../../config/terminal-fs";
         logToTerm(`  music        Toggle music player`);
         logToTerm(`  game         Play number guessing game`);
         logToTerm(`  theme        Switch UI theme`);
-        logToTerm(`  matrix       ???`);
+        logToTerm(`  matrix       Enter the Matrix`);
         return;
 
       case "clear":
@@ -266,7 +269,6 @@ import { FILE_SYSTEM, INITIAL_PATH } from "../../config/terminal-fs";
         return;
     }
 
-    // 2. 文件系统命令
     const currentDir = getCurrentDir();
     if (!currentDir || currentDir.type !== "dir") {
       logToTerm(`Error: File system corruption.`);
@@ -299,13 +301,12 @@ import { FILE_SYSTEM, INITIAL_PATH } from "../../config/terminal-fs";
 
       case "cd":
         if (!param) {
-          currentPath = ["home", "guest"]; // 回到首页
+          currentPath = ["home", "guest"];
         } else if (param === "..") {
           if (currentPath.length > 0) currentPath.pop();
         } else if (param === "/") {
           currentPath = [];
         } else {
-          // 检查目标目录是否存在
           if (
             currentDir.children[param] &&
             currentDir.children[param].type === "dir"
@@ -326,7 +327,6 @@ import { FILE_SYSTEM, INITIAL_PATH } from "../../config/terminal-fs";
         const file = currentDir.children[param];
         if (file) {
           if (file.type === "file") {
-            // 模拟打字效果
             file.content.split("\n").forEach((line) => logToTerm(line));
           } else {
             logToTerm(`cat: ${param}: Not a text file`);
@@ -355,10 +355,7 @@ import { FILE_SYSTEM, INITIAL_PATH } from "../../config/terminal-fs";
     }
   }
 
-  // ==========================================
-  // 下面是原有的 UI/Audio 逻辑 (保持兼容)
-  // ==========================================
-
+  // --- UI/Audio 逻辑 ---
   const mobileToggle = document.getElementById("mobile-toggle");
   const toolbar = document.getElementById("toolbar");
   let isToolbarVisible = false;
@@ -469,7 +466,6 @@ import { FILE_SYSTEM, INITIAL_PATH } from "../../config/terminal-fs";
   });
   loadTrack(0);
 
-  // --- 终端 UI 交互 ---
   const termOverlay = document.getElementById("global-terminal");
   const termWindow = document.getElementById("term-window");
   const termInput = document.getElementById("term-input");
@@ -487,7 +483,7 @@ import { FILE_SYSTEM, INITIAL_PATH } from "../../config/terminal-fs";
       termWindow.classList.remove("scale-95");
       termWindow.classList.add("scale-100");
       setTimeout(() => termInput?.focus(), 100);
-      updatePrompt(); // 打开时更新一次路径
+      updatePrompt();
     } else {
       termOverlay.classList.add("opacity-0");
       termWindow.classList.remove("scale-100");
@@ -512,7 +508,6 @@ import { FILE_SYSTEM, INITIAL_PATH } from "../../config/terminal-fs";
     }
   }
 
-  // 猜数字游戏逻辑
   function startGame() {
     targetNum = Math.floor(Math.random() * 100);
     gameActive = true;
@@ -533,10 +528,9 @@ import { FILE_SYSTEM, INITIAL_PATH } from "../../config/terminal-fs";
   termInput?.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       const val = termInput.value.trim();
-      logToTerm(val, true); // Log input
+      logToTerm(val, true);
       termInput.value = "";
 
-      // 游戏模式拦截
       if (gameActive) {
         if (val.toLowerCase() === "exit") {
           gameActive = false;
@@ -557,13 +551,10 @@ import { FILE_SYSTEM, INITIAL_PATH } from "../../config/terminal-fs";
         }
         return;
       }
-
-      // 执行系统命令
       execCommand(val);
     }
   });
 
-  // 主题 & 背景特效 (保持不变)
   const themes = [
     {
       name: "DOS_GREEN",

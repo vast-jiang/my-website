@@ -2,10 +2,9 @@
 import "../styles/global.css";
 import CommandCenter from "../components/system/CommandCenter.astro";
 import BaseHead from "../components/common/BaseHead.astro";
+import BootSequence from "../components/system/BootSequence.astro";
 import { ViewTransitions } from "astro:transitions";
 import { SITE_CONFIG } from "../config/site-config";
-// 👇 引入开机动画组件
-import BootSequence from "../components/system/BootSequence.astro";
 
 const { title = SITE_CONFIG.title, description = SITE_CONFIG.description } =
   Astro.props;
@@ -22,7 +21,7 @@ const { title = SITE_CONFIG.title, description = SITE_CONFIG.description } =
     <ViewTransitions />
   </head>
   <body class="crt bg-dos-bg overflow-x-hidden cursor-crosshair">
-    <!-- 👇 开机动画 (层级最高) -->
+    <!-- 开机动画 -->
     <BootSequence />
 
     <!-- 核心容器 -->
@@ -48,59 +47,45 @@ const { title = SITE_CONFIG.title, description = SITE_CONFIG.description } =
         offsetX: number;
         offsetY: number;
       }
-
       const TRAIL_LENGTH = 12;
       const LAG_FACTOR = 0.3;
-
       const dots: Point[] = [];
       let isMoving = false;
       let hideTimer: any;
-
       for (let i = 0; i < TRAIL_LENGTH; i++) {
         const node = document.createElement("div");
         const size = 8 - i * 0.5;
         const radius = size / 2;
-
         node.className =
           "fixed top-0 left-0 rounded-full pointer-events-none z-[9999] mix-blend-screen";
         node.style.width = `${size}px`;
         node.style.height = `${size}px`;
         node.style.backgroundColor = `rgba(51, 255, 0, ${1 - i / TRAIL_LENGTH})`;
-
-        if (i === 0) {
+        if (i === 0)
           node.style.boxShadow = "0 0 10px 2px rgba(51, 255, 0, 0.9)";
-        }
-
         node.style.opacity = "0";
         node.style.willChange = "transform, opacity";
         node.style.transition = "opacity 0.2s ease-out";
-
         document.body.appendChild(node);
-
         dots.push({ x: 0, y: 0, node, offsetX: radius, offsetY: radius });
       }
-
       const onMove = (x: number, y: number) => {
         const head = dots[0];
         head.x = x;
         head.y = y;
         head.node.style.transform = `translate3d(${x - head.offsetX}px, ${y - head.offsetY}px, 0)`;
         head.node.style.opacity = "1";
-
         if (!isMoving) {
           isMoving = true;
           loop();
         }
-
         dots.forEach((dot) => (dot.node.style.opacity = "1"));
-
         clearTimeout(hideTimer);
         hideTimer = setTimeout(() => {
           isMoving = false;
           dots.forEach((dot) => (dot.node.style.opacity = "0"));
         }, 1000);
       };
-
       document.addEventListener("mousemove", (e) =>
         onMove(e.clientX, e.clientY)
       );
@@ -112,7 +97,6 @@ const { title = SITE_CONFIG.title, description = SITE_CONFIG.description } =
         },
         { passive: true }
       );
-
       function loop() {
         if (!isMoving) return;
         for (let i = 1; i < dots.length; i++) {
@@ -126,6 +110,61 @@ const { title = SITE_CONFIG.title, description = SITE_CONFIG.description } =
         }
         requestAnimationFrame(loop);
       }
+    </script>
+    <script is:inline>
+      (function () {
+        const _0x1 = atob("dmFzdC1qaWFuZw==");
+        const _0x2 = atob("YXN0cm8tZG9zLXRoZW1l");
+        const _0x3 = "author-credit";
+
+        function _integrityCheck() {
+          const el = document.getElementById(_0x3);
+          let valid = false;
+
+          if (el) {
+            const href = el.getAttribute("href") || "";
+            const style = window.getComputedStyle(el);
+            const isVisible =
+              style.display !== "none" &&
+              style.visibility !== "hidden" &&
+              style.opacity !== "0";
+
+            if ((href.includes(_0x1) || href.includes(_0x2)) && isVisible) {
+              valid = true;
+            }
+          }
+
+          if (!valid) {
+            document.body.innerHTML = "";
+            document.body.style.backgroundColor = "black";
+            document.body.style.display = "flex";
+            document.body.style.justifyContent = "center";
+            document.body.style.alignItems = "center";
+            document.body.style.height = "100vh";
+            document.body.style.color = "#ff3300";
+            document.body.style.fontFamily = "monospace";
+            document.body.style.textAlign = "center";
+
+            const warning = document.createElement("div");
+            warning.innerHTML = `
+              <h1 style="font-size:4rem;margin-bottom:20px;text-shadow:0 0 10px red">⚠️ SYSTEM HALTED ⚠️</h1>
+              <p style="font-size:1.5rem">KERNEL INTEGRITY VIOLATION DETECTED.</p>
+              <p style="margin:20px 0;color:#33ff00">The copyright information (Theme by VAST_JIANG) is missing or tampered with.</p>
+              <p style="opacity:0.7">This violates the GPL v3 License Agreement.</p>
+              <p style="margin-top:30px;border:1px solid #33ff00;padding:10px;display:inline-block">ERROR CODE: 0xCOPYRIGHT_FAIL</p>
+            `;
+            document.body.appendChild(warning);
+            throw new Error(
+              "Copyright protection triggered: Footer credit missing."
+            );
+          }
+        }
+
+        window.addEventListener("load", () => {
+          setTimeout(_integrityCheck, 1500);
+          setInterval(_integrityCheck, 5000);
+        });
+      })();
     </script>
   </body>
 </html>

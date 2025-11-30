@@ -25,6 +25,10 @@ A retro-futuristic mini OS running in your browser.
 
 这不仅仅是一个静态博客，它包含了一个**虚拟文件系统 (VFS)**、**全局命令行终端**以及**沉浸式媒体体验**。
 
+### 🌐 在线演示 / Live Demo
+
+> **[点击进入赛博空间 / Enter Cyberspace](https://blog.jianghao.work)**
+
 ### ✨ 核心特性
 
 | 模块                | 功能描述                                                                              |
@@ -37,7 +41,20 @@ A retro-futuristic mini OS running in your browser.
 | **💬 通讯模块**     | 集成 **Giscus** 评论系统，定制化**透明暗色主题**，完美融入玻璃面板。                  |
 | **⚡ 极致性能**     | 基于 **Astro v5** + **View Transitions**，实现 APP 般的无刷新流畅体验。               |
 
-![Project Structure](https://pibt.cpolar.cn/down/KGIcTpPoCO0r.webp)
+### 📸 界面预览 / Screenshots
+
+<details>
+<summary>点击展开查看更多截图 / Click to expand</summary>
+
+|              首页 (Home)               |            终端 (Terminal)             |
+| :------------------------------------: | :------------------------------------: |
+| ![Home](https://你的图片链接/home.png) | ![Term](https://你的图片链接/term.png) |
+
+|            文章详情 (Post)             |              移动端 (Mobile)               |
+| :------------------------------------: | :----------------------------------------: |
+| ![Post](https://你的图片链接/post.png) | ![Mobile](https://你的图片链接/mobile.png) |
+
+</details>
 
 ### 📂 项目架构 (V3.0.0)
 
@@ -71,6 +88,13 @@ A retro-futuristic mini OS running in your browser.
 | `npm run dev`     | 启动本地开发服务器 (localhost:4321) |
 | `npm run build`   | 构建生产环境代码到 `./dist/`        |
 | `npm run preview` | 预览生产环境构建效果                |
+
+### ⚡ 一键部署 / Deploy Now
+
+你可以直接点击下方按钮，将本项目部署到你的 Vercel 或 Netlify：
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvast-jiang%2Fastro-dos-theme)
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/vast-jiang/astro-dos-theme)
 
 ### ⚙️ 个性化配置指南
 
@@ -195,6 +219,18 @@ Press <kbd>Ctrl</kbd> + <kbd>K</kbd> to toggle the global terminal:
 - `game` : Play a mini-game.
 - `matrix` : Trigger visual effects.
 - `reboot` : Restart the UI.
+
+## 🌟 Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=vast-jiang/astro-dos-theme&type=Date)](https://star-history.com/#vast-jiang/astro-dos-theme&Date)
+
+## 🤝 贡献 / Contributing
+
+欢迎提交 Issue 或 Pull Request！
+如果你喜欢这个项目，请给它一个 ⭐️ Star！
+
+Welcome to submit Issues or Pull Requests!
+If you like this project, please give it a ⭐️ Star!
 
 ---
 

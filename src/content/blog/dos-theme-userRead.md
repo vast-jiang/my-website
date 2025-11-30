@@ -3,7 +3,7 @@ title: "dos风格ASTRO theme个人网站开源指南"
 description: "当你厌倦了千篇一律的 Header + Hero + Footer 这种现代网页布局时，是否想过回归计算机的本源？这里有一份基于 Astro v5 构建的赛博朋克 OS 风格网站复刻指南。内含虚拟文件系统、CLI 终端和 3D 全息投影。"
 date: 2025-11-30
 tags: ["技术", "生活"]
-draft: true
+draft: false
 ---
 
 大家好，我是 **VAST_JIANG**。

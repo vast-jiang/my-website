@@ -1,70 +1,60 @@
 ---
-import { PROJECTS } from "../../config/site-config";
+import { getCollection } from "astro:content";
 import CyberImage from "../common/CyberImage.astro";
 
-// 直接使用引入的 PROJECTS 常量
-const projects = PROJECTS;
+// 现在 TS 应该能正确识别 'projects' 了
+const allProjects = await getCollection("projects");
+
+const projects = allProjects.sort((a, b) => {
+  if (a.data.featured && !b.data.featured) return -1;
+  if (!a.data.featured && b.data.featured) return 1;
+  return 0;
+});
 ---
 
-<!-- 1. 作品网格列表 -->
+<!-- 作品网格列表 -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
   {
-    projects.map((item) =>
-      item.type === "PHOTO" ? (
-        // 摄影卡片：点击触发 openLightbox
+    projects.map((project) =>
+      project.data.type === "PHOTO" ? (
+        // 摄影卡片
         <div
           class="group relative aspect-video border border-dos-dim overflow-hidden block cursor-zoom-in photo-card"
-          data-img={item.img}
-          data-title={item.title}
+          data-img={project.data.cover}
+          data-title={project.data.title}
         >
           <div class="absolute inset-0 bg-dos-primary/20 mix-blend-overlay z-10 opacity-0 group-hover:opacity-100 transition duration-300 pointer-events-none" />
           <CyberImage
-            src={item.img || ""}
-            alt={item.title}
+            src={project.data.cover || ""}
+            alt={project.data.title}
             className="w-full h-full grayscale contrast-125 group-hover:grayscale-0"
           />
           <div class="absolute bottom-0 left-0 bg-black/80 px-2 py-1 text-xs text-white border-t border-r border-dos-primary z-20">
-            [VIEW] {item.title}
+            [VIEW] {project.data.title}
           </div>
         </div>
-      ) : item.type === "FILE" ? (
-        // 下载卡片
-        <a
-          href={item.link}
-          class="border border-dos-dim border-dashed p-6 flex flex-col items-center justify-center text-center hover:bg-dos-dim/10 group transition no-underline relative overflow-hidden"
-        >
-          <div class="absolute inset-0 bg-dos-dim/5 animate-[scan_2s_linear_infinite] pointer-events-none opacity-0 group-hover:opacity-100" />
-          <div class="text-4xl mb-2 text-dos-dim group-hover:text-dos-primary transition">
-            💾
-          </div>
-          <h3 class="font-bold text-lg text-dos-primary">{item.title}</h3>
-          <p class="text-xs text-dos-dim mt-1">SIZE: {item.size}</p>
-          <button class="mt-4 text-xs border border-dos-primary px-4 py-1 text-dos-primary hover:bg-dos-primary hover:text-black transition">
-            [ DOWNLOAD ]
-          </button>
-        </a>
       ) : (
-        // 项目卡片
+        // 通用项目卡片
         <a
-          href={item.link}
+          href={project.data.link || "#"}
           target="_blank"
           class="glass-panel p-5 hover:-translate-y-1 transition duration-300 group no-underline block relative"
         >
           <div class="absolute top-2 right-2 w-2 h-2 bg-dos-dim rounded-full group-hover:bg-dos-primary group-hover:animate-ping" />
           <div class="flex justify-between items-start mb-3">
             <span class="bg-dos-dim/20 text-dos-primary text-xs px-2 py-0.5 rounded border border-dos-dim">
-              {item.type}
+              {project.data.type}
             </span>
             <span class="text-xs text-dos-dim font-mono">>_</span>
           </div>
           <h3 class="text-xl font-bold mb-2 text-white group-hover:text-dos-primary transition">
-            {item.title}
+            {project.data.title}
           </h3>
-          <p class="text-sm text-dos-primary/70 mb-4 h-10 overflow-hidden">
-            {item.desc}
+          <p class="text-sm text-dos-primary/70 mb-4 h-10 overflow-hidden line-clamp-2">
+            {project.data.description}
           </p>
-          <div class="flex gap-2">
-            {item.tech?.map((t) => (
+          <div class="flex gap-2 flex-wrap">
+            {project.data.tech?.map((t) => (
               <span class="text-[10px] border border-dos-dim px-1 text-dos-dim">
                 {t}
               </span>
@@ -76,7 +66,7 @@ const projects = PROJECTS;
   }
 </div>
 
-<!-- 2. 图片大图查看器 (Lightbox) -->
+<!-- Lightbox 代码 -->
 <div
   id="lightbox"
   class="fixed inset-0 z-[200] bg-black/95 hidden flex-col items-center justify-center backdrop-blur-md opacity-0 transition-opacity duration-300"
@@ -84,10 +74,8 @@ const projects = PROJECTS;
   <button
     id="lightbox-close"
     class="absolute top-4 right-4 text-dos-primary border border-dos-primary px-4 py-2 hover:bg-dos-primary hover:text-black transition z-50 font-mono"
+    >[X] CLOSE</button
   >
-    [X] CLOSE
-  </button>
-
   <div
     class="relative max-w-[90vw] max-h-[85vh] border-2 border-dos-dim shadow-[0_0_50px_rgba(51,255,0,0.2)] p-1 bg-black"
   >
@@ -114,7 +102,6 @@ const projects = PROJECTS;
       alt="Preview"
       class="max-w-full max-h-[80vh] object-contain"
     />
-
     <div
       class="absolute bottom-0 left-0 right-0 bg-black/80 text-center py-2 text-dos-primary font-mono text-lg border-t border-dos-dim"
     >

@@ -1,10 +1,11 @@
 ---
 import "../styles/global.css";
-// 路径修正：引用 system 文件夹下的组件
 import CommandCenter from "../components/system/CommandCenter.astro";
 import BaseHead from "../components/common/BaseHead.astro";
 import { ViewTransitions } from "astro:transitions";
 import { SITE_CONFIG } from "../config/site-config";
+// 👇 引入开机动画组件
+import BootSequence from "../components/system/BootSequence.astro";
 
 const { title = SITE_CONFIG.title, description = SITE_CONFIG.description } =
   Astro.props;
@@ -21,6 +22,9 @@ const { title = SITE_CONFIG.title, description = SITE_CONFIG.description } =
     <ViewTransitions />
   </head>
   <body class="crt bg-dos-bg overflow-x-hidden cursor-crosshair">
+    <!-- 👇 开机动画 (层级最高) -->
+    <BootSequence />
+
     <!-- 核心容器 -->
     <div
       id="app-container"

@@ -1,14 +1,12 @@
-// src/config/site-config.ts
-
 export const SITE_CONFIG = {
   title: 'Astro DOS Terminal',
   description: 'Personal Cyberpunk Command Center based on Astro v5',
-  url: 'https://blog.jianghao.work', // 部署时确保此处正确
+  url: 'https://blog.jianghao.work',
   author: {
     name: 'VAST_JIANG',
     id: '16909',
     location: 'CN_CHANGZHOU_WUJIN_7',
-    avatar: '/images/avatar.png', // 请确保 public/images/ 下有此文件
+    avatar: '/images/avatar.png',
   }
 } as const;
 
@@ -21,8 +19,6 @@ export const SOCIAL_LINKS = [
   { name: '嘉立创',   file: 'PCB.PRO',     url: 'https://oshwhub.com/ticdi/works', desc: '硬件工程' },
   { name: 'QQ邮箱',   file: 'MAIL.BAT',    url: 'mailto:16909925690@qq.com', desc: '发送邮件' },
   { name: 'GMAIL',    file: 'GMAIL.BAT',   url: 'mailto:jianghao1573@gmail.com', desc: 'Global Mail' },
-  
-  // 👇 新增 RSS 订阅入口
   { name: 'RSS订阅',  file: 'FEED.XML',    url: '/rss.xml', desc: '订阅最新文章' },
 ];
 
@@ -40,9 +36,39 @@ export const SKILLS = [
 ];
 
 export const MUSIC_PLAYLIST = [
-  { name: "Art Inside-VØJ_Gotei.mp3", url: "/music/Art Inside-VØJ_Gotei.mp3" }, 
-  // 在此添加更多: { name: "LOFI.mp3", url: "/music/lofi.mp3" },
+  { name: "CYBER_CITY.mp3", url: "/music/bgm.mp3" }, 
 ];
+
+export const GISCUS_CONFIG = {
+  repo: "vast-jiang/astro-dos-theme",
+  repoId: "R_kgDOQeuWZg",
+  category: "Announcements",
+  categoryId: "DIC_kwDOQeuWZs4CzMLe",
+  theme: "transparent_dark",
+  lang: "zh-CN"
+} as const;
+
+// ⚡ 特性开关 (Feature Flags)
+export const FEATURES = {
+  // 核心功能
+  search: false,
+  codeCopy: true,
+  
+  // 仪表盘
+  weather: true,
+  clock: true,
+  yearProgress: true,
+  ipStatus: true,
+  
+  // 娱乐与特效
+  glitch: true,
+  games: true,
+  matrix: true,
+  
+  // 👇 新增两个独立开关
+  techGraph: true,  // 技术栈拓扑图
+  gameGraph: true,  // 游戏库拓扑图
+} as const;
 
 export interface ProjectItem {
   type: string;
@@ -53,38 +79,6 @@ export interface ProjectItem {
   desc?: string;
   tech?: string[];
   size?: string;
+  featured?: boolean;
 }
-
-export const PROJECTS: ProjectItem[] = [
-  {
-    type: "PHOTO",
-    title: "风景",
-    date: "2025.10",
-    img: "https://youke1.picui.cn/s1/2025/11/28/6929bd6ed8f55.jpg",
-    link: "#",
-  },
-  {
-    type: "CODE",
-    title: "Astro-DOS",
-    desc: "我的个人网站源码",
-    tech: ["Astro", "TS"],
-    link: "https://github.com/vast-jiang",
-  },
-  {
-    type: "FILE",
-    title: "JhNovel Setup 1.0.0.exe",
-    size: "115.9MB",
-    desc: "点击下载简历",
-    link: "https://pibt.cpolar.cn/down/O9vMnOrL9MLr.exe",
-  },
-];
-
-// Giscus 评论配置 
-export const GISCUS_CONFIG = {
-  repo: "vast-jiang/astro-dos-theme",
-  repoId: "R_kgDOQeuWZg",
-  category: "Announcements",
-  categoryId: "DIC_kwDOQeuWZs4CzMLe",
-  theme: "transparent_dark", // 高对比度暗色，完美适配 DOS
-  lang: "zh-CN"
-} as const;
+export const PROJECTS: ProjectItem[] = [];

@@ -1,0 +1,48 @@
+---
+const { headings } = Astro.props;
+
+// 如果没有标题，或是空数组，不渲染目录
+if (!headings || headings.length === 0) return;
+---
+
+<nav
+  class="hidden xl:block sticky top-24 w-72 ml-8 p-4 glass-panel max-h-[70vh] overflow-y-auto custom-scrollbar"
+>
+  <div
+    class="text-xs text-dos-dim mb-4 border-b border-dos-dim/30 pb-2 font-bold flex justify-between"
+  >
+    <span>> MEMORY_MAP</span>
+    <span class="animate-pulse">_</span>
+  </div>
+
+  <ul class="space-y-1 text-xs font-mono">
+    {
+      headings.map((heading: any) => (
+        <li style={`padding-left: ${(heading.depth - 1) * 12}px`}>
+          <a
+            href={`#${heading.slug}`}
+            class="block text-dos-dim/70 hover:text-dos-primary transition truncate border-l-2 border-transparent hover:border-dos-primary pl-2 py-1 hover:bg-dos-primary/5"
+          >
+            {heading.text}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style>
+  /* 自定义滚动条，保持 DOS 风格 */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #000;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #005f00;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #33ff00;
+  }
+</style>

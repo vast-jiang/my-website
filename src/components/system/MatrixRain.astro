@@ -1,0 +1,85 @@
+---
+import { FEATURES } from "../../config/site-config";
+// 如果开关关闭，不渲染
+if (!FEATURES.matrix) return;
+---
+
+<canvas
+  id="matrix-canvas"
+  class="fixed inset-0 z-[80] pointer-events-none hidden opacity-90 mix-blend-screen"
+></canvas>
+
+<script>
+  const canvas = document.getElementById("matrix-canvas") as HTMLCanvasElement;
+
+  if (canvas) {
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Canvas context not supported");
+
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+
+    // 字符集
+    const chars =
+      "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const charArray = chars.split("");
+
+    const fontSize = 14;
+    let columns = width / fontSize;
+    const drops: number[] = [];
+
+    for (let i = 0; i < columns; i++) {
+      drops[i] = 1;
+    }
+
+    let animationId: number;
+    let isActive = false;
+
+    function draw() {
+      if (!ctx) return;
+
+      // 拖尾效果
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.fillStyle = "#0F0";
+      ctx.font = `${fontSize}px monospace`;
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = charArray[Math.floor(Math.random() * charArray.length)];
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+        if (drops[i] * fontSize > height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+
+      if (isActive) {
+        animationId = requestAnimationFrame(draw);
+      }
+    }
+
+    window.addEventListener("resize", () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      columns = width / fontSize;
+      drops.length = 0;
+      for (let i = 0; i < columns; i++) drops[i] = 1;
+    });
+
+    // 监听自定义事件控制开关
+    document.addEventListener("toggle-matrix", ((e: CustomEvent) => {
+      const show = e.detail?.show;
+      if (show) {
+        canvas.classList.remove("hidden");
+        isActive = true;
+        draw();
+      } else {
+        isActive = false;
+        canvas.classList.add("hidden");
+        if (animationId) cancelAnimationFrame(animationId);
+      }
+    }) as EventListener);
+  }
+</script>

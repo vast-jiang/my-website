@@ -3,8 +3,10 @@ import "../styles/global.css";
 import CommandCenter from "../components/system/CommandCenter.astro";
 import BaseHead from "../components/common/BaseHead.astro";
 import BootSequence from "../components/system/BootSequence.astro";
+// 👇 现在这个文件存在了，不会报错了
+import MatrixRain from "../components/system/MatrixRain.astro";
 import { ViewTransitions } from "astro:transitions";
-import { SITE_CONFIG } from "../config/site-config";
+import { SITE_CONFIG, FEATURES } from "../config/site-config";
 
 const { title = SITE_CONFIG.title, description = SITE_CONFIG.description } =
   Astro.props;
@@ -14,17 +16,15 @@ const { title = SITE_CONFIG.title, description = SITE_CONFIG.description } =
 <html lang="zh-cn">
   <head>
     <BaseHead title={title} description={description} />
-    <!-- 不蒜子统计 -->
     <script
       async
       src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
     <ViewTransitions />
   </head>
   <body class="crt bg-dos-bg overflow-x-hidden cursor-crosshair">
-    <!-- 开机动画 -->
     <BootSequence />
+    <MatrixRain />
 
-    <!-- 核心容器 -->
     <div
       id="app-container"
       class="crt-screen min-h-screen flex flex-col p-2 md:p-8 max-w-7xl mx-auto selection:bg-dos-primary selection:text-black pb-24 md:pb-0"
@@ -111,16 +111,16 @@ const { title = SITE_CONFIG.title, description = SITE_CONFIG.description } =
         requestAnimationFrame(loop);
       }
     </script>
+
+    <!-- DRM 保护脚本 -->
     <script is:inline>
       (function () {
         const _0x1 = atob("dmFzdC1qaWFuZw==");
         const _0x2 = atob("YXN0cm8tZG9zLXRoZW1l");
         const _0x3 = "author-credit";
-
         function _integrityCheck() {
           const el = document.getElementById(_0x3);
           let valid = false;
-
           if (el) {
             const href = el.getAttribute("href") || "";
             const style = window.getComputedStyle(el);
@@ -128,12 +128,10 @@ const { title = SITE_CONFIG.title, description = SITE_CONFIG.description } =
               style.display !== "none" &&
               style.visibility !== "hidden" &&
               style.opacity !== "0";
-
             if ((href.includes(_0x1) || href.includes(_0x2)) && isVisible) {
               valid = true;
             }
           }
-
           if (!valid) {
             document.body.innerHTML = "";
             document.body.style.backgroundColor = "black";
@@ -144,27 +142,80 @@ const { title = SITE_CONFIG.title, description = SITE_CONFIG.description } =
             document.body.style.color = "#ff3300";
             document.body.style.fontFamily = "monospace";
             document.body.style.textAlign = "center";
-
             const warning = document.createElement("div");
-            warning.innerHTML = `
-              <h1 style="font-size:4rem;margin-bottom:20px;text-shadow:0 0 10px red">⚠️ SYSTEM HALTED ⚠️</h1>
-              <p style="font-size:1.5rem">KERNEL INTEGRITY VIOLATION DETECTED.</p>
-              <p style="margin:20px 0;color:#33ff00">The copyright information (Theme by VAST_JIANG) is missing or tampered with.</p>
-              <p style="opacity:0.7">This violates the GPL v3 License Agreement.</p>
-              <p style="margin-top:30px;border:1px solid #33ff00;padding:10px;display:inline-block">ERROR CODE: 0xCOPYRIGHT_FAIL</p>
-            `;
+            warning.innerHTML = `<h1 style="font-size:4rem;margin-bottom:20px;text-shadow:0 0 10px red">⚠️ SYSTEM HALTED ⚠️</h1><p style="font-size:1.5rem">KERNEL INTEGRITY VIOLATION DETECTED.</p><p style="margin:20px 0;color:#33ff00">The copyright information (Theme by VAST_JIANG) is missing or tampered with.</p><p style="opacity:0.7">This violates the GPL v3 License Agreement.</p>`;
             document.body.appendChild(warning);
-            throw new Error(
-              "Copyright protection triggered: Footer credit missing."
-            );
+            throw new Error("Copyright protection triggered.");
           }
         }
-
         window.addEventListener("load", () => {
           setTimeout(_integrityCheck, 1500);
           setInterval(_integrityCheck, 5000);
         });
       })();
+    </script>
+
+    <!-- 特性开关逻辑 (代码复制 & 故障文字) -->
+    <script define:vars={{ features: FEATURES }}>
+      document.addEventListener("astro:page-load", () => {
+        // 1. 代码复制
+        if (features.codeCopy) {
+          const codeBlocks = document.querySelectorAll("pre");
+          codeBlocks.forEach((block) => {
+            if (block.parentElement?.classList.contains("code-wrapper")) return;
+            const wrapper = document.createElement("div");
+            wrapper.className = "relative group code-wrapper";
+            block.parentNode.insertBefore(wrapper, block);
+            wrapper.appendChild(block);
+            const button = document.createElement("button");
+            button.className =
+              "absolute top-2 right-2 text-[10px] border border-dos-dim bg-black/80 text-dos-dim px-2 py-1 opacity-0 group-hover:opacity-100 transition hover:text-dos-primary hover:border-dos-primary cursor-pointer font-mono z-10";
+            button.innerText = "COPY";
+            button.addEventListener("click", async () => {
+              const code = block.querySelector("code")?.innerText || "";
+              try {
+                await navigator.clipboard.writeText(code);
+                button.innerText = "COPIED!";
+                button.style.borderColor = "#33ff00";
+                button.style.color = "#33ff00";
+                setTimeout(() => {
+                  button.innerText = "COPY";
+                  button.style.borderColor = "";
+                  button.style.color = "";
+                }, 2000);
+              } catch (err) {
+                button.innerText = "ERROR";
+              }
+            });
+            wrapper.appendChild(button);
+          });
+        }
+
+        // 2. 全局故障文字
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*[]<>";
+        const targets = document.querySelectorAll(".glitch-effect");
+        targets.forEach((target) => {
+          if (!target.dataset.value) target.dataset.value = target.innerText;
+          target.onmouseover = (event) => {
+            let iteration = 0;
+            const originalText = event.target.dataset.value;
+            if (event.target.dataset.interval)
+              clearInterval(parseInt(event.target.dataset.interval));
+            const interval = setInterval(() => {
+              event.target.innerText = event.target.innerText
+                .split("")
+                .map((letter, index) => {
+                  if (index < iteration) return originalText[index];
+                  return letters[Math.floor(Math.random() * letters.length)];
+                })
+                .join("");
+              if (iteration >= originalText.length) clearInterval(interval);
+              iteration += 1 / 2;
+            }, 30);
+            event.target.dataset.interval = interval.toString();
+          };
+        });
+      });
     </script>
   </body>
 </html>

@@ -1,28 +1,60 @@
 ---
+import { Image } from "astro:assets";
+
 interface Props {
   src: string;
   alt: string;
   className?: string;
 }
+
 const { src, alt, className } = Astro.props;
+
+// 逻辑判断：
+// 1. 如果是远程图片 (http开头)，直接用 img 标签 (除非你在 config 里配置了 domains)
+// 2. 如果是本地图片 (public下)，Astro Image 需要特殊处理，或者我们简单处理用原生 lazy
+// 为了兼容性，这里使用一种混合策略：
+const isRemote = src.startsWith("http");
 ---
 
-<div class={`relative overflow-hidden ${className}`}>
-  <img
-    src={src}
-    alt={alt}
-    class="w-full h-full object-cover transition duration-500"
-    onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden'); this.nextElementSibling.classList.add('flex');"
-    loading="lazy"
-  />
+<div class={`relative overflow-hidden ${className} bg-gray-900`}>
+  {/* 如果是远程图片，使用标准 img 标签但加上 lazy */}
+  {
+    isRemote ? (
+      <img
+        src={src}
+        alt={alt}
+        class="w-full h-full object-cover transition duration-500 opacity-0 transition-opacity duration-300"
+        loading="lazy"
+        onload="this.style.opacity='1'"
+        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+      />
+    ) : (
+      /* 如果是本地图片，理想情况应移入 src/assets 并 import。
+       但为了兼容 public 目录结构，我们这里依然使用 img，但增强加载体验 */
+      <img
+        src={src}
+        alt={alt}
+        class="w-full h-full object-cover transition duration-500 opacity-0 transition-opacity duration-300"
+        loading="lazy"
+        onload="this.style.opacity='1'"
+        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+      />
+    )
+  }
 
-  <!-- Fallback Placeholder (默认隐藏) -->
+  <!-- Fallback Placeholder (加载失败时显示) -->
   <div
-    class="hidden absolute inset-0 bg-gray-900 flex-col items-center justify-center border border-red-500/50 p-4 text-center"
+    class="hidden absolute inset-0 bg-gray-900 flex-col items-center justify-center border border-red-500/50 p-4 text-center z-10"
   >
     <span class="text-red-500 font-bold text-xs animate-pulse">ERROR 404</span>
     <span class="text-red-400/70 text-[10px] mt-1 font-mono break-all"
-      >MISSING: {src.split("/").pop()}</span
+      >ASSET_MISSING</span
     >
+  </div>
+
+  <!-- 加载骨架屏 (图片加载前显示) -->
+  <div
+    class="absolute inset-0 bg-dos-dim/10 animate-pulse pointer-events-none -z-10"
+  >
   </div>
 </div>

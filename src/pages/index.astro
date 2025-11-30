@@ -1,42 +1,49 @@
 ---
-import { getCollection } from 'astro:content';
-import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
 
-// --- 组件引入 (V3.0.0 架构) ---
-// Layout
-import TerminalHeader from '../components/layout/TerminalHeader.astro';
-import TerminalFooter from '../components/layout/TerminalFooter.astro';
-// Dashboard
-import DynamicStatus from '../components/dashboard/DynamicStatus.astro';
-import SystemMonitor from '../components/dashboard/SystemMonitor.astro';
-import ProjectGallery from '../components/dashboard/ProjectGallery.astro';
-import CommentSystem from '../components/dashboard/CommentSystem.astro'; // 评论组件
-// Common
-import SearchWidget from '../components/common/SearchWidget.astro';
-import CyberImage from '../components/common/CyberImage.astro';
+// 组件
+import TerminalHeader from "../components/layout/TerminalHeader.astro";
+import TerminalFooter from "../components/layout/TerminalFooter.astro";
+import DynamicStatus from "../components/dashboard/DynamicStatus.astro";
+import SystemMonitor from "../components/dashboard/SystemMonitor.astro";
+import ProjectGallery from "../components/dashboard/ProjectGallery.astro";
+import CommentSystem from "../components/dashboard/CommentSystem.astro";
+import SearchWidget from "../components/common/SearchWidget.astro";
+import CyberImage from "../components/common/CyberImage.astro";
+import NetworkGraph from "../components/dashboard/NetworkGraph.astro";
 
-// --- 配置引入 ---
-import { 
-  SITE_CONFIG, 
-  SOCIAL_LINKS, 
-  CONTACTS, 
-  SKILLS 
-} from '../config/site-config';
+// 配置与数据
+import {
+  SITE_CONFIG,
+  SOCIAL_LINKS,
+  CONTACTS,
+  FEATURES,
+} from "../config/site-config";
+import {
+  TECH_NODES,
+  TECH_LINKS,
+  GAME_NODES,
+  GAME_LINKS,
+} from "../config/graph-data";
 
-// --- 数据获取 ---
-const posts = await getCollection('blog');
+const posts = await getCollection("blog");
 const sortedPosts = posts
-  .filter(p => !p.data.draft)
+  .filter((p) => !p.data.draft)
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
-  .slice(0, 5); // 首页仅显示最新的 5 篇
+  .slice(0, 5);
 ---
 
 <BaseLayout title="COMMAND_CENTER">
   <TerminalHeader />
 
-  <!-- 顶部日志跑马灯 -->
-  <div class="mb-8 border-y border-dos-dim/30 bg-dos-dim/5 py-1 overflow-hidden relative group">
-    <div class="whitespace-nowrap animate-[scan_20s_linear_infinite] text-xs font-mono text-dos-dim hover:pause flex">
+  <!-- 日志跑马灯 -->
+  <div
+    class="mb-8 border-y border-dos-dim/30 bg-dos-dim/5 py-1 overflow-hidden relative group"
+  >
+    <div
+      class="whitespace-nowrap animate-[scan_20s_linear_infinite] text-xs font-mono text-dos-dim hover:pause flex"
+    >
       <span class="mr-8">> BOOT_SEQUENCE_INIT... OK</span>
       <span class="mr-8">> CHECKING_MEMORY_BLOCKS... 100%</span>
       <span class="mr-8">> MOUNTING_DRIVES... DONE</span>
@@ -45,74 +52,135 @@ const sortedPosts = posts
   </div>
 
   <main class="space-y-16 min-h-screen pb-20">
-    
-    <!-- 1. 核心情报区 -->
-    <section class="flex flex-col lg:flex-row gap-8">
+    <!-- 1. 核心情报区 (Visual Core) -->
+    <section class="flex flex-col lg:flex-row gap-8 h-auto lg:h-[420px]">
       <!-- 左：ID 卡 -->
-      <div class="w-full lg:w-1/3 glass-panel p-6 flex flex-col items-center text-center relative overflow-hidden group">
-        <div class="absolute inset-0 bg-dos-primary/5 opacity-0 group-hover:opacity-100 transition duration-700 pointer-events-none"></div>
-        <div class="relative z-10 w-full">
-          <div class="w-40 h-40 border-2 border-dos-primary p-1 mx-auto mb-4 relative group/avatar">
-             <!-- 旋转装饰圈 -->
-             <div class="absolute -inset-4 border border-dos-dim/50 rounded-full animate-[spin_10s_linear_infinite] border-dashed opacity-50"></div>
-             <!-- 头像组件 -->
-             <CyberImage 
-               src={SITE_CONFIG.author.avatar} 
-               alt="Avatar" 
-               className="w-full h-full grayscale contrast-125 hover:grayscale-0" 
-             />
-             <div class="absolute bottom-1 right-1 bg-black text-dos-primary text-[10px] px-1 font-bold">IMG_01</div>
+      <div
+        class="w-full lg:w-1/3 glass-panel p-6 flex flex-col items-center text-center relative overflow-hidden group h-full"
+      >
+        <div
+          class="absolute inset-0 bg-dos-primary/5 opacity-0 group-hover:opacity-100 transition duration-700 pointer-events-none"
+        >
+        </div>
+        <div class="relative z-10 w-full flex flex-col h-full justify-center">
+          <div
+            class="w-40 h-40 border-2 border-dos-primary p-1 mx-auto mb-6 relative group/avatar"
+          >
+            <div
+              class="absolute -inset-4 border border-dos-dim/50 rounded-full animate-[spin_10s_linear_infinite] border-dashed opacity-50"
+            >
+            </div>
+            <CyberImage
+              src={SITE_CONFIG.author.avatar}
+              alt="Avatar"
+              className="w-full h-full grayscale contrast-125 hover:grayscale-0"
+            />
+            <div
+              class="absolute bottom-1 right-1 bg-black text-dos-primary text-[10px] px-1 font-bold"
+            >
+              IMG_01
+            </div>
           </div>
-          <h2 class="text-2xl font-bold mb-1 tracking-widest">{SITE_CONFIG.author.name}</h2>
-          <div class="text-xs border border-dos-primary px-2 py-0.5 inline-block mb-4 text-black bg-dos-primary font-bold">
+          <h2
+            class="text-3xl font-bold mb-2 tracking-widest glitch-effect"
+            data-value={SITE_CONFIG.author.name}
+          >
+            {SITE_CONFIG.author.name}
+          </h2>
+          <div
+            class="text-xs border border-dos-primary px-3 py-1 inline-block mb-6 text-black bg-dos-primary font-bold mx-auto"
+          >
             LV.99 OPERATOR | ID: {SITE_CONFIG.author.id}
           </div>
-          <div class="w-full text-left mt-2">
+          <div class="w-full text-left mt-auto">
             <DynamicStatus />
           </div>
         </div>
       </div>
 
-      <!-- 右：技能矩阵与搜索 -->
-      <div class="flex-1 flex flex-col justify-between gap-6">
-        
-        <!-- 搜索框区域 -->
-        <div class="glass-panel p-4">
-           <div class="text-xs text-dos-dim mb-2 uppercase flex justify-between">
-              <span>DATABASE_QUERY</span>
-              <span class="animate-pulse text-dos-primary">WAITING_INPUT...</span>
-           </div>
-           <SearchWidget />
-        </div>
+      <!-- 右：搜索 + 核心日志 (SYSTEM_CORE) -->
+      <div class="flex-1 flex flex-col gap-6 h-full">
+        <!-- 搜索框 -->
+        {
+          FEATURES.search && (
+            <div class="glass-panel p-4 flex-shrink-0">
+              <div class="text-xs text-dos-dim mb-2 uppercase flex justify-between">
+                <span>DATABASE_QUERY</span>
+                <span class="animate-pulse text-dos-primary">
+                  WAITING_INPUT...
+                </span>
+              </div>
+              <SearchWidget />
+            </div>
+          )
+        }
 
-        <!-- 技能矩阵 -->
-        <div class="glass-panel p-6 relative overflow-hidden flex-1">
-          <div class="absolute top-0 right-0 p-2 text-[10px] text-dos-dim opacity-50">MEM_ALLOC: STATIC</div>
-          <h3 class="text-lg font-bold border-b border-dos-dim mb-6 pb-2 flex justify-between items-end">
-            <span class="flex items-center gap-2"><span class="w-2 h-2 bg-dos-primary animate-pulse"></span> SKILL_MATRIX</span>
-          </h3>
-          
-          <div class="space-y-5">
-            {SKILLS.map(skill => (
-              <div class="group">
-                <div class="flex justify-between text-xs mb-1 font-mono">
-                  <span class="text-white group-hover:text-dos-primary transition">{skill.name}</span>
-                  <div class="flex gap-4 text-dos-dim">
-                    <span>ADDR:{skill.mem}</span>
-                    <span class="text-dos-primary">{skill.lv}%</span>
-                  </div>
+        <!-- 👇 核心改造区：硬核系统日志面板 -->
+        <div
+          class="glass-panel p-6 relative overflow-hidden flex-1 flex flex-col justify-center border border-dos-dim/50 group hover:border-dos-primary transition-colors"
+        >
+          <!-- 背景装饰：快速滚动的二进制流 -->
+          <div
+            class="absolute inset-0 opacity-5 pointer-events-none overflow-hidden text-[10px] font-mono break-all select-none leading-3 whitespace-pre-wrap"
+          >
+            01010101001010101110101010101001010101010101010101010101010101010101010
+            10101010101010101010101010101010101010101010101010101010101010101010101
+            00110010101010101010101010101010101010101010101010101010101010101010101
+            11101010101010101010101010101010101010101010101010101010101010101010101
+            01010101001010101110101010101001010101010101010101010101010101010101010
+            01010001001010100100100001011101010101010101001010010100100101010101001
+            11010100010101001110101010101010100101010100010010101111010101001010010
+            10000010101110101010101010101001111110010001111010101010001000100101001
+            11001010100111010101010100101011110000010111110100001100101010101001000
+          </div>
+
+          <div class="relative z-10">
+            <div
+              class="flex items-center gap-2 mb-4 border-b border-dos-dim/30 pb-2"
+            >
+              <span class="w-3 h-3 bg-dos-primary animate-pulse"></span>
+              <h3
+                class="text-xl font-bold text-dos-primary glitch-effect"
+                data-value="SYSTEM_KERNEL"
+              >
+                SYSTEM_KERNEL
+              </h3>
+            </div>
+
+            <!-- 硬核内容区 -->
+            <div class="font-mono text-xs md:text-sm text-dos-dim space-y-2">
+              <div class="flex justify-between">
+                <span class="text-dos-primary">> Loading FFT modules...</span>
+                <span class="text-white">[OK]</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-dos-primary"
+                  >> Calibrating vector space...</span
+                >
+                <span class="text-white">[99%]</span>
+              </div>
+
+              <div class="py-2">
+                <div class="text-dos-dim/80 mb-1">
+                  > Resolving dependencies:
                 </div>
-                <!-- 进度条轨道 -->
-                <div class="h-3 bg-black border border-dos-dim/50 relative p-0.5">
-                  <div 
-                    class="skill-bar h-full bg-dos-primary shadow-[0_0_10px_rgba(51,255,0,0.5)] relative" 
-                    style={`width: 0%; --target-width: ${skill.lv}%`}
-                  >
-                    <div class="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.5),transparent)] bg-[length:200%_100%] animate-[scan_1.5s_linear_infinite]"></div>
-                  </div>
+                <div
+                  class="pl-4 text-dos-dim/60 text-[10px] grid grid-cols-2 gap-1"
+                >
+                  <span>- Astro.js Core v5.0</span>
+                  <span>- React.Fiber</span>
+                  <span>- Three.js WebGL</span>
+                  <span>- Tailwind CSS v4</span>
                 </div>
               </div>
-            ))}
+
+              <div
+                class="flex gap-2 mt-2 pt-2 border-t border-dos-dim/30 text-dos-primary animate-pulse"
+              >
+                <span>_</span>
+                <span>Awaiting operator command...</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -123,10 +191,62 @@ const sortedPosts = posts
       <SystemMonitor />
     </section>
 
-    <!-- 3. 作品展示 -->
+    <!-- 3. 技术栈拓扑图 (TECH) -->
+    {
+      FEATURES.techGraph && (
+        <section>
+          <div class="flex justify-between items-end mb-4 border-b-2 border-dos-dim pb-1">
+            <h3
+              class="text-xl font-bold flex items-center gap-2 glitch-effect"
+              data-value="TECH_STACK_TOPOLOGY"
+            >
+              <span class="w-3 h-3 bg-dos-primary" /> TECH_STACK_TOPOLOGY
+            </h3>
+            <span class="text-xs text-dos-dim">MODE: ANALYTICAL</span>
+          </div>
+          <NetworkGraph
+            id="tech"
+            title="SKILL"
+            nodes={TECH_NODES}
+            links={TECH_LINKS}
+          />
+        </section>
+      )
+    }
+
+    <!-- 4. 游戏库拓扑图 (GAMES) -->
+    {
+      FEATURES.gameGraph && (
+        <section>
+          <div class="flex justify-between items-end mb-4 border-b-2 border-dos-dim pb-1">
+            <h3
+              class="text-xl font-bold flex items-center gap-2 glitch-effect"
+              data-value="GAME_LIBRARY_DB"
+            >
+              <span class="w-3 h-3 bg-[var(--color-dos-alert)]" />{" "}
+              GAME_LIBRARY_DB
+            </h3>
+            <span class="text-xs text-dos-dim">MODE: ENTERTAINMENT</span>
+          </div>
+          <NetworkGraph
+            id="game"
+            title="STEAM"
+            nodes={GAME_NODES}
+            links={GAME_LINKS}
+          />
+        </section>
+      )
+    }
+
+    <!-- 5. 作品展示 -->
     <section>
-      <div class="flex justify-between items-end mb-4 border-b-2 border-dos-dim pb-1">
-        <h3 class="text-xl font-bold flex items-center gap-2">
+      <div
+        class="flex justify-between items-end mb-4 border-b-2 border-dos-dim pb-1"
+      >
+        <h3
+          class="text-xl font-bold flex items-center gap-2 glitch-effect"
+          data-value="PORTFOLIO"
+        >
           <span class="w-3 h-3 bg-dos-primary"></span> 作品归档 (PORTFOLIO)
         </h3>
         <span class="text-xs text-dos-dim font-mono">[DIR: /HOME/WORKS]</span>
@@ -134,13 +254,22 @@ const sortedPosts = posts
       <ProjectGallery />
     </section>
 
-    <!-- 4. 博客文章 -->
+    <!-- 6. 博客文章 -->
     <section>
-      <div class="flex justify-between items-end mb-4 border-b-2 border-dos-dim pb-1">
-        <h3 class="text-xl font-bold flex items-center gap-2">
+      <div
+        class="flex justify-between items-end mb-4 border-b-2 border-dos-dim pb-1"
+      >
+        <h3
+          class="text-xl font-bold flex items-center gap-2 glitch-effect"
+          data-value="SYSTEM_LOGS"
+        >
           <span class="w-3 h-3 bg-dos-primary"></span> Blog区
         </h3>
-        <a href="/logs" class="text-xs text-dos-dim font-mono hover:text-dos-primary">[VIEW_ALL_LOGS]</a>
+        <a
+          href="/logs"
+          class="text-xs text-dos-dim font-mono hover:text-dos-primary"
+          >[VIEW_ALL_LOGS]</a
+        >
       </div>
 
       <div class="glass-panel p-2">
@@ -152,96 +281,137 @@ const sortedPosts = posts
             </tr>
           </thead>
           <tbody class="font-mono text-sm">
-            {sortedPosts.length > 0 ? sortedPosts.map((post) => (
-              <tr 
-                class="border-b border-dos-dim/30 hover:bg-dos-primary/10 transition-colors group cursor-pointer relative" 
-                onclick={`window.location.href='/posts/${post.slug}'`}
-              >
-                <td class="p-3 pl-4">
-                  <span class="absolute left-1 opacity-0 group-hover:opacity-100 text-dos-primary transition-opacity">></span>
-                  <span class="font-bold text-white group-hover:text-dos-primary block w-full truncate">
-                     {post.data.title} <span class="text-dos-dim text-xs">({post.slug}.TXT)</span>
-                  </span>
-                </td>
-                <td class="p-3 text-right text-dos-dim">{post.data.date.toISOString().split('T')[0]}</td>
-              </tr>
-            )) : (
-              <tr><td colspan="2" class="p-4 text-center text-dos-dim">NO_LOGS_FOUND...</td></tr>
-            )}
+            {
+              sortedPosts.length > 0 ? (
+                sortedPosts.map((post) => (
+                  <tr
+                    class="border-b border-dos-dim/30 hover:bg-dos-primary/10 transition-colors group cursor-pointer relative"
+                    onclick={`window.location.href='/posts/${post.slug}'`}
+                  >
+                    <td class="p-3 pl-4">
+                      <span class="absolute left-1 opacity-0 group-hover:opacity-100 text-dos-primary transition-opacity">
+                        >
+                      </span>
+                      <span class="font-bold text-white group-hover:text-dos-primary block w-full truncate">
+                        {post.data.title}{" "}
+                        <span class="text-dos-dim text-xs">
+                          ({post.slug}.TXT)
+                        </span>
+                      </span>
+                    </td>
+                    <td class="p-3 text-right text-dos-dim">
+                      {post.data.date.toISOString().split("T")[0]}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colspan="2" class="p-4 text-center text-dos-dim">
+                    NO_LOGS_FOUND...
+                  </td>
+                </tr>
+              )
+            }
           </tbody>
         </table>
       </div>
     </section>
 
-    <!-- 5. 外部链接 -->
+    <!-- 7. 外部链接 -->
     <section id="contacts">
-      <div class="flex justify-between items-end mb-4 border-b-2 border-dos-dim pb-1">
-        <h3 class="text-xl font-bold flex items-center gap-2">
+      <div
+        class="flex justify-between items-end mb-4 border-b-2 border-dos-dim pb-1"
+      >
+        <h3
+          class="text-xl font-bold flex items-center gap-2 glitch-effect"
+          data-value="UPLINK_NODES"
+        >
           <span class="w-3 h-3 bg-dos-primary"></span> 外链 (LINKS)
         </h3>
         <span class="text-xs text-dos-dim">NET_STATUS: CONNECTED</span>
       </div>
-       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {SOCIAL_LINKS.map(link => (
-          <a href={link.url} target="_blank" class="glass-panel p-4 hover:bg-dos-primary hover:text-black transition-all group relative overflow-hidden no-underline h-28 flex flex-col justify-between hover:scale-[1.02]">
-            <div class="absolute -right-2 -bottom-4 text-6xl opacity-5 font-black group-hover:opacity-10 pointer-events-none transition-opacity">↗</div>
-            <div class="flex justify-between items-start z-10">
-              <span class="font-bold text-lg tracking-tight">[{link.name}]</span>
-              <span class="text-[9px] border border-current px-1 opacity-60 rounded-sm">{link.file}</span>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {
+          SOCIAL_LINKS.map((link) => (
+            <a
+              href={link.url}
+              target="_blank"
+              class="glass-panel p-4 hover:bg-dos-primary hover:text-black transition-all group relative overflow-hidden no-underline h-28 flex flex-col justify-between hover:scale-[1.02]"
+            >
+              <div class="absolute -right-2 -bottom-4 text-6xl opacity-5 font-black group-hover:opacity-10 pointer-events-none transition-opacity">
+                ↗
+              </div>
+              <div class="flex justify-between items-start z-10">
+                <span class="font-bold text-lg tracking-tight">
+                  [{link.name}]
+                </span>
+                <span class="text-[9px] border border-current px-1 opacity-60 rounded-sm">
+                  {link.file}
+                </span>
+              </div>
+              <div class="text-xs opacity-80 group-hover:opacity-100 font-mono z-10 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 bg-current rounded-full animate-pulse" />{" "}
+                {link.desc}
+              </div>
+            </a>
+          ))
+        }
+        {
+          CONTACTS.map((contact) => (
+            <div class="glass-panel p-4 bg-dos-dim/5 relative group h-28 flex flex-col justify-between cursor-help border-dashed hover:border-solid hover:border-dos-primary transition-all">
+              <div class="flex justify-between items-start text-dos-dim group-hover:text-dos-primary">
+                <span class="font-bold">[{contact.name}]</span>
+                <span class="text-[9px] opacity-50 border border-current px-1">
+                  {contact.file}
+                </span>
+              </div>
+              <div class="font-mono text-lg truncate select-all text-dos-primary group-hover:drop-shadow-[0_0_2px_rgba(51,255,0,0.8)]">
+                {contact.value}
+              </div>
+              <div class="text-[10px] text-dos-dim uppercase flex justify-between border-t border-dos-dim/20 pt-2">
+                <span>{contact.hint}</span>
+                <span class="opacity-0 group-hover:opacity-100 font-bold">
+                  COPY ID
+                </span>
+              </div>
             </div>
-            <div class="text-xs opacity-80 group-hover:opacity-100 font-mono z-10 flex items-center gap-1">
-               <span class="w-1.5 h-1.5 bg-current rounded-full animate-pulse"></span> {link.desc}
-            </div>
-          </a>
-        ))}
-        {CONTACTS.map(contact => (
-          <div class="glass-panel p-4 bg-dos-dim/5 relative group h-28 flex flex-col justify-between cursor-help border-dashed hover:border-solid hover:border-dos-primary transition-all">
-            <div class="flex justify-between items-start text-dos-dim group-hover:text-dos-primary">
-              <span class="font-bold">[{contact.name}]</span>
-              <span class="text-[9px] opacity-50 border border-current px-1">{contact.file}</span>
-            </div>
-            <div class="font-mono text-lg truncate select-all text-dos-primary group-hover:drop-shadow-[0_0_2px_rgba(51,255,0,0.8)]">
-              {contact.value}
-            </div>
-            <div class="text-[10px] text-dos-dim uppercase flex justify-between border-t border-dos-dim/20 pt-2">
-              <span>{contact.hint}</span>
-              <span class="opacity-0 group-hover:opacity-100 font-bold">COPY ID</span>
-            </div>
-          </div>
-        ))}
+          ))
+        }
       </div>
     </section>
 
-    <!-- 6. 公共留言板 (新特性) -->
+    <!-- 8. 公共留言板 -->
     <section>
-      <div class="flex justify-between items-end mb-0 border-b-2 border-dos-dim pb-1">
-        <h3 class="text-xl font-bold flex items-center gap-2">
+      <div
+        class="flex justify-between items-end mb-0 border-b-2 border-dos-dim pb-1"
+      >
+        <h3
+          class="text-xl font-bold flex items-center gap-2 glitch-effect"
+          data-value="GUEST_BOOK"
+        >
           <span class="w-3 h-3 bg-dos-primary"></span> 公共留言板 (GUEST_BOOK)
         </h3>
         <span class="text-xs text-dos-dim">MODE: PUBLIC_WRITE</span>
       </div>
-      <!-- 使用 CommentSystem，配合 config 中的 transparent_dark 主题 -->
       <CommentSystem />
     </section>
-
   </main>
-  
+
   <TerminalFooter />
 </BaseLayout>
 
 <script>
-  // 技能条加载动画
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
-      const bars = document.querySelectorAll('.skill-bar');
+      const bars = document.querySelectorAll(".skill-bar");
       bars.forEach((el) => {
         const bar = el as HTMLElement;
-        const styleAttr = bar.getAttribute('style');
+        const styleAttr = bar.getAttribute("style");
         if (styleAttr) {
           const match = styleAttr.match(/--target-width:\s*([^;]+)/);
           if (match && match[1]) {
             bar.style.width = match[1];
-            bar.style.transition = 'width 1.5s cubic-bezier(0.22, 1, 0.36, 1)';
+            bar.style.transition = "width 1.5s cubic-bezier(0.22, 1, 0.36, 1)";
           }
         }
       });

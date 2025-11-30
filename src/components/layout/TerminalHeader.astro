@@ -1,16 +1,15 @@
 ---
 const pathname = Astro.url.pathname;
 
-// 导航配置
 const navItems = [
   { name: "控制台", path: "/" },
-  { name: "系统日志", path: "/logs" }, // 新页面
-  { name: "用户手册", path: "/about" }, // 新页面
+  { name: "系统日志", path: "/logs" },
+  { name: "用户手册", path: "/about" },
 ];
 ---
 
 <header class="mb-6 md:mb-10 relative z-40">
-  <!-- 顶部装饰线 (手机隐藏) -->
+  <!-- 顶部装饰线 -->
   <div
     class="hidden md:flex justify-between items-center text-xs text-dos-dim mb-1 font-mono uppercase tracking-widest"
   >
@@ -22,18 +21,19 @@ const navItems = [
   <div
     class="border-y-2 border-dos-primary bg-black/90 backdrop-blur-sm p-3 md:p-4 flex flex-col md:flex-row justify-between items-center relative gap-4 md:gap-0"
   >
-    <!-- 左侧 LOGO -->
+    <!-- 左侧 LOGO (添加了故障特效) -->
     <div
       class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start"
     >
       <div class="flex flex-col">
         <h1
-          class="text-2xl md:text-4xl font-bold tracking-tighter drop-shadow-[0_0_10px_rgba(51,255,0,0.8)]"
+          class="text-2xl md:text-4xl font-bold tracking-tighter drop-shadow-[0_0_10px_rgba(51,255,0,0.8)] glitch-effect cursor-default"
+          data-value="DOS_SYSTEM"
         >
           DOS_SYSTEM<span class="animate-blink">_</span>
         </h1>
         <p class="text-[10px] md:text-xs text-dos-dim tracking-widest">
-          KERNEL V5.0 // MOBILE_READY
+          KERNEL V3.0 // MOBILE_READY
         </p>
       </div>
       <!-- 手机端右上角装饰 -->
@@ -43,8 +43,7 @@ const navItems = [
       </div>
     </div>
 
-    <!-- 右侧 导航菜单 (响应式优化) -->
-    <!-- 手机端：允许横向滚动 -->
+    <!-- 右侧 导航菜单 -->
     <nav
       class="w-full md:w-auto overflow-x-auto flex gap-1 bg-dos-dim/10 p-1 rounded border border-dos-dim/30 no-scrollbar"
     >
@@ -71,7 +70,6 @@ const navItems = [
 </header>
 
 <style>
-  /* 隐藏滚动条但保留功能 */
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }

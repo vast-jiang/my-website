@@ -4,6 +4,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import TerminalHeader from "../../components/layout/TerminalHeader.astro";
 import TerminalFooter from "../../components/layout/TerminalFooter.astro";
 import CommentSystem from "../../components/dashboard/CommentSystem.astro";
+// 👇 这里现在能找到文件了
+import TableOfContents from "../../components/blog/TableOfContents.astro";
 
 export async function getStaticPaths() {
   const posts = await getCollection("blog");
@@ -14,16 +16,16 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
-const { Content } = await render(post);
-const tags = post.data.tags || []; // 获取标签，防止 undefined
+const { Content, headings } = await render(post); // 获取标题数据
+const tags = post.data.tags || [];
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description}>
   <TerminalHeader />
 
-  <main class="max-w-4xl mx-auto min-h-screen relative">
-    <!-- 1. 文章顶部元数据区 -->
-    <div class="mb-8 border-b-2 border-dos-dim pb-4">
+  <main class="max-w-7xl mx-auto min-h-screen relative px-4">
+    <!-- 头部信息 -->
+    <div class="mb-8 border-b-2 border-dos-dim pb-4 max-w-4xl">
       <div class="flex justify-between items-start mb-4">
         <div
           class="flex flex-wrap gap-4 text-xs font-mono text-dos-dim uppercase"
@@ -31,11 +33,9 @@ const tags = post.data.tags || []; // 获取标签，防止 undefined
           <span>LOG_ID: {post.slug}</span>
           <span>DATE: {post.data.date.toISOString().split("T")[0]}</span>
         </div>
-
-        <!-- 🏷️ 标签展示区 (新功能) -->
         <div class="flex gap-2">
           {
-            tags.map((tag) => (
+            tags.map((tag: string) => (
               <a
                 href={`/tags/${tag}`}
                 class="text-[10px] border border-dos-dim px-1.5 py-0.5 text-dos-dim hover:border-dos-primary hover:text-dos-primary hover:bg-dos-primary/10 transition no-underline"
@@ -46,7 +46,6 @@ const tags = post.data.tags || []; // 获取标签，防止 undefined
           }
         </div>
       </div>
-
       <h1
         class="text-3xl md:text-5xl font-bold text-dos-primary mb-4 leading-tight"
       >
@@ -59,15 +58,25 @@ const tags = post.data.tags || []; // 获取标签，防止 undefined
       </p>
     </div>
 
-    <!-- 2. 文章正文内容区 -->
-    <article
-      class="prose prose-invert prose-green max-w-none font-mono prose-headings:font-bold prose-headings:text-dos-primary prose-a:text-dos-primary prose-a:no-underline hover:prose-a:underline prose-code:text-dos-alert prose-pre:bg-black prose-pre:border prose-pre:border-dos-dim/50"
-    >
-      <Content />
-    </article>
+    <!-- 左右分栏布局 -->
+    <div class="flex flex-col xl:flex-row gap-12 items-start">
+      <!-- 左侧文章正文 -->
+      <article
+        class="flex-1 min-w-0 prose prose-invert prose-green max-w-none font-mono prose-headings:font-bold prose-headings:text-dos-primary prose-a:text-dos-primary prose-a:no-underline hover:prose-a:underline prose-code:text-dos-alert prose-pre:bg-black prose-pre:border prose-pre:border-dos-dim/50"
+      >
+        <Content />
+      </article>
 
-    <!-- 3. 底部导航与返回 -->
-    <div class="mt-16 border-t border-dos-dim pt-8 flex justify-between">
+      <!-- 右侧目录 (仅在大屏显示) -->
+      <aside class="hidden xl:block w-80 flex-shrink-0">
+        <TableOfContents headings={headings} />
+      </aside>
+    </div>
+
+    <!-- 底部功能区 -->
+    <div
+      class="mt-16 border-t border-dos-dim pt-8 flex justify-between max-w-4xl"
+    >
       <a
         href="/"
         class="text-dos-dim hover:text-dos-primary transition no-underline"
@@ -82,8 +91,9 @@ const tags = post.data.tags || []; // 获取标签，防止 undefined
       </button>
     </div>
 
-    <!-- 4. 评论系统挂载点 -->
-    <CommentSystem />
+    <div class="max-w-4xl">
+      <CommentSystem />
+    </div>
   </main>
 
   <TerminalFooter />

@@ -1,18 +1,24 @@
 ---
-// SearchWidget.astro
+import { FEATURES } from "../../config/site-config";
+
+// 如果开关关闭，直接不渲染
+if (!FEATURES.search) return;
 ---
 
 <div id="search-container" class="relative group w-full">
-  <div id="search" class="font-mono text-sm"></div>
+  <div
+    class="absolute -inset-0.5 bg-dos-dim/30 opacity-0 group-hover:opacity-100 transition duration-500 blur-sm"
+  >
+  </div>
+  <div id="search" class="relative font-mono text-sm min-h-[50px]"></div>
 </div>
 
 <script is:inline>
   window.addEventListener("load", () => {
-    // 检查是否已经加载过脚本，避免重复
-    if (document.getElementById("pagefind-script")) return;
+    // 检查 DOM 是否存在
+    if (!document.getElementById("search")) return;
 
     const script = document.createElement("script");
-    script.id = "pagefind-script";
     script.src = "/pagefind/pagefind-ui.js";
     script.onload = () => {
       // @ts-ignore
@@ -22,7 +28,7 @@
           showSubResults: true,
           showImages: false,
           translations: {
-            placeholder: "SEARCH_DATABASE...",
+            placeholder: "GREP_DATABASE...",
             zero_results: "NO_DATA_FOUND: [SEARCH_TERM]",
           },
         });
@@ -33,26 +39,26 @@
 </script>
 
 <style is:global>
-  /* 强制覆盖 Pagefind 默认样式以适应 DOS 风格 */
+  /* Pagefind DOS 风格覆盖 */
   :root {
     --pagefind-ui-scale: 0.8;
     --pagefind-ui-primary: #33ff00;
     --pagefind-ui-text: #33ff00;
-    --pagefind-ui-background: #050505;
+    --pagefind-ui-background: #000;
     --pagefind-ui-border: #005f00;
     --pagefind-ui-tag: #005f00;
     --pagefind-ui-font: "VT323", monospace;
   }
   .pagefind-ui__search-input {
-    background-color: #000 !important;
-    border: 1px solid #33ff00 !important;
+    background-color: transparent !important;
+    border: 1px solid #005f00 !important;
     color: #33ff00 !important;
     border-radius: 0 !important;
   }
   .pagefind-ui__drawer {
     background-color: #050505 !important;
     border: 1px solid #005f00;
-    box-shadow: 0 0 15px rgba(51, 255, 0, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 20, 0, 0.9);
   }
   .pagefind-ui__result {
     border-bottom: 1px dashed #005f00 !important;

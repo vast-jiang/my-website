@@ -1,103 +1,141 @@
 ---
-// src/components/SystemMonitor.astro
+import WeatherWidget from "./WeatherWidget.astro";
+import { FEATURES } from "../../config/site-config";
+
+// 动态计算开启的组件数量
+const activeWidgets = [
+  FEATURES.clock,
+  FEATURES.yearProgress,
+  FEATURES.weather,
+  FEATURES.ipStatus,
+].filter(Boolean).length;
+
+// 全关则不渲染
+if (activeWidgets === 0) return;
 ---
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-  
+<!-- 根据开启数量自动调整网格列数 -->
+<div
+  class={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-${Math.min(activeWidgets, 4)} gap-4 mb-8`}
+>
   <!-- 1. 实时时钟 -->
-  <div class="glass-panel p-4 relative overflow-hidden group">
-    <div class="text-xs text-dos-dim uppercase mb-1 flex justify-between">
-      <span>SYS_TIME</span>
-      <span class="animate-pulse text-dos-primary">● REC</span>
-    </div>
-    <div id="clock-display" class="text-3xl font-bold text-white tracking-widest font-mono">00:00:00</div>
-    <div class="text-xs text-dos-primary/70 mt-1 font-mono" id="date-display">SYNCING...</div>
-  </div>
+  {
+    FEATURES.clock && (
+      <div class="glass-panel p-4 relative overflow-hidden group min-h-[100px] flex flex-col justify-between">
+        <div class="text-xs text-dos-dim uppercase mb-1 flex justify-between">
+          <span>SYS_TIME</span>
+          <span class="animate-pulse text-dos-primary">● REC</span>
+        </div>
+        <div>
+          <div
+            id="clock-display"
+            class="text-3xl font-bold text-white tracking-widest font-mono leading-none"
+          >
+            00:00:00
+          </div>
+          <div
+            class="text-xs text-dos-primary/70 mt-1 font-mono"
+            id="date-display"
+          >
+            SYNCING...
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   <!-- 2. 年进度条 -->
-  <div class="glass-panel p-4 relative">
-    <div class="flex justify-between text-xs text-dos-dim uppercase mb-2">
-      <span>YEAR_PROGRESS</span>
-      <span id="year-percent">0%</span>
-    </div>
-    <div class="h-4 bg-dos-dim/20 border border-dos-dim relative overflow-hidden">
-      <div id="year-bar" class="h-full bg-dos-primary w-0 relative transition-all duration-1000 ease-out">
-        <!-- 增加纹理，看起来像电池 -->
-        <div class="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_2px,#000_2px,#000_4px)] opacity-20"></div>
+  {
+    FEATURES.yearProgress && (
+      <div class="glass-panel p-4 relative min-h-[100px] flex flex-col justify-between">
+        <div class="flex justify-between text-xs text-dos-dim uppercase mb-2">
+          <span>YEAR_PROGRESS</span>
+          <span id="year-percent">0%</span>
+        </div>
+        <div class="w-full">
+          <div class="h-4 bg-dos-dim/20 border border-dos-dim relative overflow-hidden">
+            <div
+              id="year-bar"
+              class="h-full bg-dos-primary w-0 relative transition-all duration-1000 ease-out"
+            >
+              <div class="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_2px,#000_2px,#000_4px)] opacity-20" />
+            </div>
+          </div>
+          <div class="text-[10px] text-dos-dim mt-2 text-right font-mono">
+            CYCLE: 2025-ALPHA
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="text-[10px] text-dos-dim mt-2 text-right font-mono">CYCLE: 2025-ALPHA</div>
-  </div>
+    )
+  }
 
-  <!-- 3. 访客 IP (真实) -->
-  <div class="glass-panel p-4 flex flex-col justify-between">
-    <div class="text-xs text-dos-dim uppercase">CLIENT_IP</div>
-    <div id="ip-display" class="text-lg font-bold font-mono text-dos-primary">SCANNING...</div>
-    <div class="flex gap-1 mt-2 text-[10px] text-dos-dim">
-       <span>PORT: 443</span>
-       <span class="text-dos-primary">SECURE</span>
-    </div>
-  </div>
+  <!-- 3. 天气模块 -->
+  <WeatherWidget />
 
-  <!-- 4. 真实访客计数器 -->
-  <div class="glass-panel p-4 relative">
-     <div class="text-xs text-dos-dim uppercase mb-1">TOTAL_VISITS (REAL)</div>
-     <!-- 不蒜子会自动查找 id="busuanzi_value_site_uv" 的元素并填入数字 -->
-     <div class="flex items-baseline gap-2">
-        <span id="busuanzi_container_site_uv" style="display:none">
-           <span id="busuanzi_value_site_uv" class="text-3xl font-bold text-white font-mono">0</span>
-        </span>
-        <span class="text-xs text-dos-dim">USERS</span>
-     </div>
-     <div class="mt-1 text-[10px] border-t border-dos-dim/30 pt-1 text-dos-dim flex justify-between">
-        <span>PV: <span id="busuanzi_value_site_pv">--</span></span>
-        <span>DB: BUSUANZI</span>
-     </div>
-  </div>
+  <!-- 4. 访客 IP -->
+  {
+    FEATURES.ipStatus && (
+      <div class="glass-panel p-4 flex flex-col justify-between min-h-[100px]">
+        <div class="text-xs text-dos-dim uppercase">CLIENT_IP</div>
+        <div
+          id="ip-display"
+          class="text-lg font-bold font-mono text-dos-primary"
+        >
+          SCANNING...
+        </div>
+        <div class="flex gap-1 mt-2 text-[10px] text-dos-dim">
+          <span>PORT: 443</span>
+          <span class="text-dos-primary">SECURE</span>
+        </div>
+      </div>
+    )
+  }
 </div>
 
 <script>
-  // 修复 1: 给参数加上类型标注 (id: string, text: string)
   function setSafeText(id: string, text: string) {
     const el = document.getElementById(id);
     if (el) el.innerText = text;
   }
 
   function updateTime() {
-    const now = new Date();
-    // 使用 en-GB 可以获得 24小时制，或者保持你原来的
-    const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
-    const dateStr = now.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' });
-    
-    setSafeText('clock-display', timeStr);
-    setSafeText('date-display', dateStr);
+    if (!document.getElementById("clock-display")) return;
 
-    // 年进度
-    const start = new Date(now.getFullYear(), 0, 0);
-    const diff = now.getTime() - start.getTime();
-    const oneDay = 1000 * 60 * 60 * 24;
-    const day = Math.floor(diff / oneDay);
-    const percent = ((day / 365) * 100).toFixed(1) + '%';
-    
-    setSafeText('year-percent', percent);
-    
-    const bar = document.getElementById('year-bar');
-    if (bar) {
-      bar.style.width = percent;
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString("en-US", { hour12: false });
+    const dateStr = now.toLocaleDateString("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+
+    setSafeText("clock-display", timeStr);
+    setSafeText("date-display", dateStr);
+
+    if (document.getElementById("year-bar")) {
+      const start = new Date(now.getFullYear(), 0, 0);
+      const diff = now.getTime() - start.getTime();
+      const oneDay = 1000 * 60 * 60 * 24;
+      const day = Math.floor(diff / oneDay);
+      const percent = ((day / 365) * 100).toFixed(1) + "%";
+
+      setSafeText("year-percent", percent);
+      const bar = document.getElementById("year-bar");
+      if (bar) bar.style.width = percent;
     }
   }
-  
+
   updateTime();
   setInterval(updateTime, 1000);
 
-  // IP 获取
-  fetch('https://api.ipify.org?format=json')
-    .then(res => res.json())
-    .then(data => {
-      // 修复: 确保 data.ip 是字符串，虽然通常 API 返回的都是字符串
-      setSafeText('ip-display', String(data.ip));
-    })
-    .catch(() => {
-      setSafeText('ip-display', "UNKNOWN");
-    });
+  if (document.getElementById("ip-display")) {
+    fetch("https://api.ipify.org?format=json")
+      .then((res) => res.json())
+      .then((data) => {
+        setSafeText("ip-display", String(data.ip));
+      })
+      .catch(() => {
+        setSafeText("ip-display", "UNKNOWN");
+      });
+  }
 </script>

@@ -1,0 +1,124 @@
+---
+
+---
+
+<!-- 
+  修复重点：
+  1. 移除 mix-blend-screen
+  2. 强制 min-height
+  3. 加一个边框 border 用来调试区域范围
+-->
+<div
+  id="hologram-wrapper"
+  class="relative w-full overflow-hidden group border border-dos-dim/30 bg-black/40"
+  style="height: 350px; min-height: 350px;"
+>
+  <!-- 装饰文字 -->
+  <div
+    class="absolute top-2 right-2 text-[10px] text-dos-dim font-mono z-10 text-right"
+  >
+    <div>FOURIER_VISUALIZER</div>
+    <div class="flex gap-2 justify-end">
+      <span class="text-dos-primary animate-pulse">RENDERING</span>
+    </div>
+  </div>
+
+  <!-- Canvas 容器 -->
+  <div id="hologram-container" class="w-full h-full relative z-0"></div>
+
+  <!-- 底部装饰 -->
+  <div class="absolute bottom-0 left-0 w-full h-1 bg-dos-primary/20"></div>
+</div>
+
+<script>
+  import * as THREE from "three";
+
+  function initHologram() {
+    console.log("🚀 Hologram: Starting init...");
+
+    const container = document.getElementById("hologram-container");
+    if (!container) {
+      console.error("❌ Hologram: Container not found!");
+      return;
+    }
+
+    // 清理旧场景
+    while (container.firstChild) {
+      container.removeChild(container.firstChild);
+    }
+
+    // 获取尺寸，如果为0则强制给一个值
+    let width = container.clientWidth || 300;
+    let height = container.clientHeight || 350;
+    console.log(`📏 Hologram Size: ${width}x${height}`);
+
+    // --- 1. 场景 ---
+    const scene = new THREE.Scene();
+    // 移除雾效，防止看不清
+    // scene.fog = new THREE.FogExp2(0x000000, 0.002);
+
+    // --- 2. 相机 ---
+    const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 100);
+    camera.position.z = 10; // 拉近一点，确保能看到
+
+    // --- 3. 渲染器 ---
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    // --- 4. 物体：傅里叶纽结 ---
+    const geometry = new THREE.TorusKnotGeometry(2.5, 0.3, 150, 16, 2, 3);
+
+    // 材质：高亮线框，不透明
+    const material = new THREE.MeshBasicMaterial({
+      color: 0x33ff00, // 纯 DOS 绿
+      wireframe: true,
+      transparent: false, // 关闭透明
+      opacity: 1.0, // 完全不透明
+    });
+
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+
+    // --- 5. 粒子 (增加视觉体积感) ---
+    const pGeo = new THREE.TorusKnotGeometry(2.5, 0.6, 100, 4, 2, 3);
+    const pMat = new THREE.PointsMaterial({
+      color: 0xffffff,
+      size: 0.05,
+    });
+    const particles = new THREE.Points(pGeo, pMat);
+    scene.add(particles);
+
+    // --- 6. 动画 ---
+    const animate = () => {
+      requestAnimationFrame(animate);
+
+      mesh.rotation.x += 0.005;
+      mesh.rotation.y += 0.008;
+
+      particles.rotation.x -= 0.005;
+      particles.rotation.y -= 0.008;
+
+      renderer.render(scene, camera);
+    };
+
+    animate();
+    console.log("✨ Hologram: Animation loop started.");
+
+    // --- Resize ---
+    const onResize = () => {
+      if (!container) return;
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    };
+    window.addEventListener("resize", onResize);
+  }
+
+  // 立即执行 + 页面加载后执行
+  initHologram();
+  document.addEventListener("astro:page-load", initHologram);
+</script>

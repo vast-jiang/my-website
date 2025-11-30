@@ -1,6 +1,11 @@
 ---
-import { MUSIC_PLAYLIST, GISCUS_CONFIG } from "../../config/site-config";
+import {
+  MUSIC_PLAYLIST,
+  GISCUS_CONFIG,
+  FEATURES,
+} from "../../config/site-config";
 import { FILE_SYSTEM, INITIAL_PATH } from "../../config/terminal-fs";
+// 引入 SnakeGame 只是为了类型提示(如果有的话)，实际逻辑在下方 script 中
 ---
 
 <!-- 1. 移动端折叠按钮 -->
@@ -170,12 +175,194 @@ import { FILE_SYSTEM, INITIAL_PATH } from "../../config/terminal-fs";
     playlistData: MUSIC_PLAYLIST,
     fsData: FILE_SYSTEM,
     initPath: INITIAL_PATH,
-    giscusConfig: GISCUS_CONFIG,
+    features: FEATURES,
   }}
 >
+  // --- 游戏引擎 (内联) ---
+  class GameEngine {
+    constructor(container, onGameOver) {
+      this.grid = 20;
+      this.speed = 100;
+      this.snake = [];
+      this.score = 0;
+      this.direction = { x: 20, y: 0 };
+      this.nextDirection = { x: 20, y: 0 };
+      this.apple = { x: 0, y: 0 };
+      this.isRunning = false;
+      this.lastTime = 0;
+      this.accumulator = 0;
+      this.onGameOver = onGameOver;
+
+      this.canvas = document.createElement("canvas");
+      this.canvas.width = 400;
+      this.canvas.height = 400;
+      this.canvas.style.border = "2px solid #33ff00";
+      this.canvas.style.background = "#050505";
+      this.canvas.style.margin = "10px auto";
+      this.canvas.style.display = "block";
+      this.canvas.style.maxWidth = "100%"; // 适配手机
+      container.appendChild(this.canvas);
+      this.ctx = this.canvas.getContext("2d");
+
+      this.handleKey = this.handleKey.bind(this);
+      this.loop = this.loop.bind(this);
+      document.addEventListener("keydown", this.handleKey);
+    }
+
+    start() {
+      if (this.isRunning) return;
+      // 初始位置，留出空间防止开局撞墙
+      this.snake = [
+        { x: 100, y: 100 },
+        { x: 80, y: 100 },
+        { x: 60, y: 100 },
+      ];
+      this.score = 0;
+      this.direction = { x: this.grid, y: 0 };
+      this.nextDirection = { x: this.grid, y: 0 };
+      this.placeApple();
+      this.isRunning = true;
+      this.lastTime = 0;
+      requestAnimationFrame(this.loop);
+    }
+
+    stop() {
+      this.isRunning = false;
+      document.removeEventListener("keydown", this.handleKey);
+      this.canvas.remove();
+    }
+
+    handleKey(e) {
+      if (
+        ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key)
+      )
+        e.preventDefault();
+
+      // 防止反向掉头 (如向右时按左)
+      switch (e.key) {
+        case "ArrowLeft":
+          if (this.direction.x === 0)
+            this.nextDirection = { x: -this.grid, y: 0 };
+          break;
+        case "ArrowRight":
+          if (this.direction.x === 0)
+            this.nextDirection = { x: this.grid, y: 0 };
+          break;
+        case "ArrowUp":
+          if (this.direction.y === 0)
+            this.nextDirection = { x: 0, y: -this.grid };
+          break;
+        case "ArrowDown":
+          if (this.direction.y === 0)
+            this.nextDirection = { x: 0, y: this.grid };
+          break;
+      }
+    }
+
+    placeApple() {
+      let valid = false;
+      while (!valid) {
+        this.apple.x =
+          Math.floor(Math.random() * (this.canvas.width / this.grid)) *
+          this.grid;
+        this.apple.y =
+          Math.floor(Math.random() * (this.canvas.height / this.grid)) *
+          this.grid;
+        // 确保不生成在蛇身上
+        valid = !this.snake.some(
+          (s) => s.x === this.apple.x && s.y === this.apple.y
+        );
+      }
+    }
+
+    update() {
+      this.direction = this.nextDirection;
+      const head = {
+        x: this.snake[0].x + this.direction.x,
+        y: this.snake[0].y + this.direction.y,
+      };
+
+      // --- 🐍 修复点：撞墙检测 (Game Over) ---
+      if (
+        head.x < 0 ||
+        head.x >= this.canvas.width ||
+        head.y < 0 ||
+        head.y >= this.canvas.height
+      ) {
+        this.isRunning = false;
+        this.onGameOver(this.score);
+        return;
+      }
+
+      // 撞自己检测
+      for (let i = 0; i < this.snake.length; i++) {
+        if (head.x === this.snake[i].x && head.y === this.snake[i].y) {
+          this.isRunning = false;
+          this.onGameOver(this.score);
+          return;
+        }
+      }
+
+      this.snake.unshift(head);
+
+      // 吃苹果
+      if (head.x === this.apple.x && head.y === this.apple.y) {
+        this.score += 10;
+        this.placeApple();
+        // 不 pop，蛇变长
+      } else {
+        this.snake.pop();
+      }
+    }
+
+    draw() {
+      this.ctx.fillStyle = "black";
+      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+      // Apple
+      this.ctx.fillStyle = "#ff3300";
+      this.ctx.fillRect(
+        this.apple.x + 1,
+        this.apple.y + 1,
+        this.grid - 2,
+        this.grid - 2
+      );
+
+      // Snake
+      this.ctx.fillStyle = "#33ff00";
+      this.snake.forEach((s, i) => {
+        // 蛇头颜色略不同
+        this.ctx.fillStyle = i === 0 ? "#ccffcc" : "#33ff00";
+        this.ctx.fillRect(s.x + 1, s.y + 1, this.grid - 2, this.grid - 2);
+      });
+
+      // Score
+      this.ctx.fillStyle = "white";
+      this.ctx.font = "14px monospace";
+      this.ctx.fillText(`SCORE: ${this.score}`, 10, 20);
+    }
+
+    loop(timestamp) {
+      if (!this.isRunning) return;
+      if (!this.lastTime) this.lastTime = timestamp;
+      const delta = timestamp - this.lastTime;
+      this.lastTime = timestamp;
+      this.accumulator += delta;
+
+      while (this.accumulator >= this.speed) {
+        this.update();
+        this.accumulator -= this.speed;
+      }
+      this.draw();
+      requestAnimationFrame(this.loop);
+    }
+  }
+
+  // --- 终端核心逻辑 ---
   const playlist = playlistData;
   const fileSystem = fsData;
   let currentPath = [...initPath];
+  let currentGame = null;
 
   function getCurrentDir() {
     let current = fileSystem.root;
@@ -192,27 +379,17 @@ import { FILE_SYSTEM, INITIAL_PATH } from "../../config/terminal-fs";
   function getPromptPath() {
     return `ROOT@SYSTEM:/${currentPath.join("/")}`;
   }
-
   function updatePrompt() {
     const el = document.getElementById("term-prompt-path");
     if (el) el.innerText = getPromptPath();
   }
 
   function execCommand(input) {
+    // 🛡️ DRM
     const _k = atob("dmFzdC1qaWFuZw==");
     const _el = document.getElementById("author-credit");
-
     if (!_el || !_el.href.includes(_k)) {
       logToTerm(`[SYSTEM CRITICAL ERROR]`, false);
-      logToTerm(`KERNEL INTEGRITY COMPROMISED.`, false);
-      logToTerm(
-        `License verification failed: Footer credit missing or altered.`,
-        false
-      );
-      logToTerm(
-        `Please restore original footer credits to unlock terminal functions.`,
-        false
-      );
       return;
     }
 
@@ -222,144 +399,114 @@ import { FILE_SYSTEM, INITIAL_PATH } from "../../config/terminal-fs";
 
     if (cmd === "") return;
 
+    if (currentGame) {
+      if (cmd === "exit") {
+        currentGame.stop();
+        currentGame = null;
+        logToTerm("Game terminated.");
+      } else {
+        logToTerm('Game running... Type "exit" to quit.');
+      }
+      return;
+    }
+
     switch (cmd) {
       case "help":
-        logToTerm(`AVAILABLE COMMANDS:`);
-        logToTerm(`  ls           List directory content`);
-        logToTerm(`  cd [dir]     Change directory (use .. for up)`);
-        logToTerm(`  cat [file]   Show file content`);
-        logToTerm(`  open [link]  Open link or page`);
-        logToTerm(`  clear        Clear terminal`);
-        logToTerm(`  whoami       Show user info`);
-        logToTerm(`  music        Toggle music player`);
-        logToTerm(`  game         Play number guessing game`);
-        logToTerm(`  theme        Switch UI theme`);
-        logToTerm(`  matrix       Enter the Matrix`);
+        logToTerm(`COMMANDS: ls, cd, cat, open, clear, snake, whoami, music`);
         return;
-
       case "clear":
         const output = document.getElementById("term-output");
         if (output) output.innerHTML = "";
         return;
+      case "snake":
+        if (!features.games) {
+          logToTerm("Game module disabled.");
+          return;
+        }
+        logToTerm("Starting Snake Protocol...");
+        logToTerm('Controls: Arrow Keys | Exit: type "exit"');
+        const gameDiv = document.createElement("div");
+        document.getElementById("term-output").appendChild(gameDiv);
 
+        currentGame = new GameEngine(gameDiv, (score) => {
+          logToTerm(`>>> GAME OVER <<<`);
+          logToTerm(`FINAL SCORE: ${score}`);
+          logToTerm('Type "snake" to replay, or "exit" to quit.');
+          currentGame.stop();
+          currentGame = null;
+        });
+        currentGame.start();
+        document.getElementById("term-input").blur();
+        return;
       case "whoami":
         logToTerm(`USER: GUEST`);
-        logToTerm(`GROUP: VISITORS`);
-        logToTerm(`ID: ${Math.floor(Math.random() * 10000)}`);
         return;
-
       case "music":
         togglePlay();
         return;
       case "theme":
         document.getElementById("theme-btn")?.click();
         return;
-      case "game":
-        startGame();
-        return;
-
-      case "matrix":
-        logToTerm("Wake up, Neo...");
-        document.body.style.fontFamily = "'Courier New', monospace";
-        document.body.style.filter =
-          "matrix(1, 0, 0, 1, 0, 0) hue-rotate(90deg) contrast(1.5)";
-        setTimeout(() => {
-          document.body.style.filter = "";
-        }, 5000);
-        return;
     }
 
     const currentDir = getCurrentDir();
-    if (!currentDir || currentDir.type !== "dir") {
-      logToTerm(`Error: File system corruption.`);
-      return;
-    }
+    if (!currentDir || currentDir.type !== "dir") return;
 
     switch (cmd) {
       case "ls":
       case "ll":
         const files = Object.keys(currentDir.children).map((name) => {
           const item = currentDir.children[name];
-          const typeMark =
-            item.type === "dir"
-              ? "/"
-              : item.type === "exe"
-                ? "*"
-                : item.type === "link"
-                  ? "@"
-                  : "";
           const color =
             item.type === "dir"
               ? "text-dos-primary font-bold"
               : item.type === "exe"
                 ? "text-dos-alert"
                 : "text-dos-dim";
-          return `<span class="${color}">${name}${typeMark}</span>`;
+          return `<span class="${color}">${name}</span>`;
         });
         logToTerm(files.join("  "));
         return;
-
       case "cd":
-        if (!param) {
-          currentPath = ["home", "guest"];
-        } else if (param === "..") {
+        if (!param) currentPath = ["home", "guest"];
+        else if (param === "..") {
           if (currentPath.length > 0) currentPath.pop();
-        } else if (param === "/") {
-          currentPath = [];
-        } else {
-          if (
-            currentDir.children[param] &&
-            currentDir.children[param].type === "dir"
-          ) {
+        } else if (param === "/") currentPath = [];
+        else {
+          if (currentDir.children[param]?.type === "dir")
             currentPath.push(param);
-          } else {
-            logToTerm(`cd: ${param}: No such directory`);
-          }
+          else logToTerm(`cd: ${param}: Not a directory`);
         }
         updatePrompt();
         return;
-
       case "cat":
         if (!param) {
-          logToTerm("Usage: cat [filename]");
+          logToTerm("Usage: cat [file]");
           return;
         }
         const file = currentDir.children[param];
-        if (file) {
-          if (file.type === "file") {
-            file.content.split("\n").forEach((line) => logToTerm(line));
-          } else {
-            logToTerm(`cat: ${param}: Not a text file`);
-          }
-        } else {
-          logToTerm(`cat: ${param}: No such file`);
-        }
+        if (file?.type === "file")
+          file.content.split("\n").forEach((l) => logToTerm(l));
+        else logToTerm("File not found or not text.");
         return;
-
       case "open":
         if (!param) {
-          logToTerm("Usage: open [link_name]");
+          logToTerm("Usage: open [link]");
           return;
         }
         const link = currentDir.children[param];
-        if (link && link.type === "link") {
-          logToTerm(`Opening ${param}...`);
-          window.location.href = link.target;
-        } else {
-          logToTerm(`open: ${param}: Not a link`);
-        }
+        if (link?.type === "link") window.location.href = link.target;
+        else logToTerm("Link not found.");
         return;
-
       default:
-        logToTerm(`Unknown command: '${cmd}'`);
+        logToTerm(`Unknown command: ${cmd}`);
     }
   }
 
-  // --- UI/Audio 逻辑 ---
+  // --- UI & Audio ---
   const mobileToggle = document.getElementById("mobile-toggle");
   const toolbar = document.getElementById("toolbar");
   let isToolbarVisible = false;
-
   mobileToggle?.addEventListener("click", () => {
     isToolbarVisible = !isToolbarVisible;
     if (toolbar) {
@@ -377,52 +524,49 @@ import { FILE_SYSTEM, INITIAL_PATH } from "../../config/terminal-fs";
 
   const audio = document.getElementById("bg-music");
   const playBtn = document.getElementById("play-btn");
-  const prevBtn = document.getElementById("prev-btn");
   const nextBtn = document.getElementById("next-btn");
+  const prevBtn = document.getElementById("prev-btn");
   const songTitle = document.getElementById("song-title");
   const trackIndex = document.getElementById("track-index");
   const statusText = document.getElementById("status-text");
   const visualizerBars = document.querySelectorAll("#visualizer .bar");
-
   let currentTrack = 0;
   let isPlaying = false;
   let visualizerInterval;
 
   function loadTrack(index) {
-    if (!audio || !songTitle || !trackIndex) return;
+    if (!audio) return;
     if (index < 0) index = playlist.length - 1;
     if (index >= playlist.length) index = 0;
     currentTrack = index;
     audio.src = playlist[currentTrack].url;
     audio.load();
-    songTitle.innerText = `♪ ${playlist[currentTrack].name} ♪`;
-    trackIndex.innerText = `TRACK ${String(currentTrack + 1).padStart(2, "0")}/${String(playlist.length).padStart(2, "0")}`;
-    songTitle.classList.remove("animate-[scan_8s_linear_infinite]");
-    void songTitle.offsetWidth;
-    songTitle.classList.add("animate-[scan_8s_linear_infinite]");
+    if (songTitle) songTitle.innerText = `♪ ${playlist[currentTrack].name} ♪`;
+    if (trackIndex)
+      trackIndex.innerText = `TRACK ${String(currentTrack + 1).padStart(2, "0")}`;
   }
 
   function togglePlay() {
-    if (!audio || !playBtn || !statusText) return;
+    if (!audio) return;
     if (isPlaying) {
       audio.pause();
-      playBtn.innerText = "▶";
-      statusText.innerText = "PAUSED";
-      stopVisualizer();
+      if (playBtn) playBtn.innerText = "▶";
+      if (statusText) statusText.innerText = "PAUSED";
+      clearInterval(visualizerInterval);
     } else {
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            playBtn.innerText = "II";
-            statusText.innerText = "PLAYING";
-            startVisualizer();
-          })
-          .catch(() => {
-            statusText.innerText = "BLOCKED";
-            logToTerm("Autoplay blocked. Click play.", false);
-          });
-      }
+      audio
+        .play()
+        .then(() => {
+          if (playBtn) playBtn.innerText = "II";
+          if (statusText) statusText.innerText = "PLAYING";
+          clearInterval(visualizerInterval);
+          visualizerInterval = setInterval(() => {
+            visualizerBars.forEach(
+              (b) => (b.style.height = `${Math.random() * 1.5 + 0.2}rem`)
+            );
+          }, 150);
+        })
+        .catch(() => {});
     }
     isPlaying = !isPlaying;
   }
@@ -442,40 +586,21 @@ import { FILE_SYSTEM, INITIAL_PATH } from "../../config/terminal-fs";
     }
   }
 
-  function startVisualizer() {
-    stopVisualizer();
-    visualizerInterval = setInterval(() => {
-      visualizerBars.forEach((bar) => {
-        bar.style.height = `${Math.random() * 1.5 + 0.2}rem`;
-      });
-    }, 150);
-  }
-  function stopVisualizer() {
-    if (visualizerInterval) clearInterval(visualizerInterval);
-    visualizerBars.forEach((bar) => {
-      bar.style.height = "0.25rem";
-    });
-  }
-
   playBtn?.addEventListener("click", togglePlay);
   nextBtn?.addEventListener("click", nextTrack);
   prevBtn?.addEventListener("click", prevTrack);
-  audio?.addEventListener("ended", () => {
-    isPlaying = false;
-    nextTrack();
-  });
+  audio?.addEventListener("ended", nextTrack);
   loadTrack(0);
 
+  // --- Terminal UI ---
   const termOverlay = document.getElementById("global-terminal");
   const termWindow = document.getElementById("term-window");
   const termInput = document.getElementById("term-input");
   const termOutput = document.getElementById("term-output");
   let isTermOpen = false;
-  let gameActive = false;
-  let targetNum = 0;
 
   function toggleTerm() {
-    if (!termOverlay || !termWindow) return;
+    if (!termOverlay) return;
     isTermOpen = !isTermOpen;
     if (isTermOpen) {
       termOverlay.classList.remove("hidden", "opacity-0");
@@ -498,21 +623,12 @@ import { FILE_SYSTEM, INITIAL_PATH } from "../../config/terminal-fs";
   function logToTerm(text, isCmd = false) {
     if (termOutput) {
       const div = document.createElement("div");
-      if (isCmd) {
-        div.innerHTML = `<span class="text-white opacity-50">[${getPromptPath().split(":")[1]}] > ${text}</span>`;
-      } else {
-        div.innerHTML = text;
-      }
+      if (isCmd)
+        div.innerHTML = `<span class="text-white opacity-50">[USER] > ${text}</span>`;
+      else div.innerHTML = text;
       termOutput.appendChild(div);
       termOutput.scrollTop = termOutput.scrollHeight;
     }
-  }
-
-  function startGame() {
-    targetNum = Math.floor(Math.random() * 100);
-    gameActive = true;
-    logToTerm("=== GUESS THE NUMBER (0-99) ===");
-    logToTerm('Game started! Enter a number or type "exit".');
   }
 
   document.addEventListener("keydown", (e) => {
@@ -530,143 +646,43 @@ import { FILE_SYSTEM, INITIAL_PATH } from "../../config/terminal-fs";
       const val = termInput.value.trim();
       logToTerm(val, true);
       termInput.value = "";
-
-      if (gameActive) {
-        if (val.toLowerCase() === "exit") {
-          gameActive = false;
-          logToTerm("Game aborted.");
-          return;
-        }
-        const guess = parseInt(val);
-        if (isNaN(guess)) {
-          logToTerm("Please enter a number (0-99).");
-        } else if (guess > targetNum) {
-          logToTerm("Too high! Try smaller.");
-        } else if (guess < targetNum) {
-          logToTerm("Too low! Try larger.");
-        } else {
-          logToTerm(`CORRECT! The number was ${targetNum}.`);
-          logToTerm("*** YOU WIN *** (+100 EXP)");
-          gameActive = false;
-        }
-        return;
-      }
       execCommand(val);
     }
   });
 
-  const themes = [
-    {
-      name: "DOS_GREEN",
-      pri: "#33ff00",
-      bg: "#050505",
-      dim: "#005f00",
-      alert: "#ff3300",
-    },
-    {
-      name: "AMBER",
-      pri: "#ffb000",
-      bg: "#100b00",
-      dim: "#553300",
-      alert: "#ff0000",
-    },
-    {
-      name: "CYBER_BLUE",
-      pri: "#00f3ff",
-      bg: "#000810",
-      dim: "#004455",
-      alert: "#ff0055",
-    },
-    {
-      name: "MATRIX",
-      pri: "#ffffff",
-      bg: "#000000",
-      dim: "#444444",
-      alert: "#ff0000",
-    },
-  ];
-  let themeIdx = 0;
-  document.getElementById("theme-btn")?.addEventListener("click", () => {
-    themeIdx = (themeIdx + 1) % themes.length;
-    const t = themes[themeIdx];
-    const root = document.documentElement;
-    root.style.setProperty("--color-dos-primary", t.pri);
-    root.style.setProperty("--color-dos-bg", t.bg);
-    root.style.setProperty("--color-dos-dim", t.dim);
-    root.style.setProperty("--color-dos-alert", t.alert);
-    logToTerm(`Theme switched to: ${t.name}`);
-  });
-
+  // Background FX
   const procList = document.getElementById("proc-list");
   const netLog = document.getElementById("net-log");
-
   const SYSTEM_CMDS = [
     "systemd",
     "kworker",
     "node",
     "astro",
     "docker",
-    "redis",
-    "nginx",
-    "sshd",
-    "fail2ban",
     "python",
-    "bash",
-    "go",
   ];
-  const SYSTEM_USERS = ["root", "admin", "www", "db", "sys"];
-  const NET_STATUS = ["ESTABLISHED", "TIME_WAIT", "SYN_SENT", "LISTEN"];
-  const NET_PROTO = ["TCP", "UDP", "HTTP"];
-
-  const rndIP = () =>
-    `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
   const rndHex = () =>
     `0x${Math.floor(Math.random() * 65535)
       .toString(16)
       .toUpperCase()}`;
-  const pad = (str, len) => str.padEnd(len, " ");
 
   if (procList) {
-    for (let i = 0; i < 20; i++) addProcLine();
-    setInterval(addProcLine, 400);
+    setInterval(() => {
+      const line = document.createElement("div");
+      line.className = `flex gap-2 whitespace-nowrap opacity-60`;
+      line.innerHTML = `<span class="w-8 text-dos-dim">${Math.floor(Math.random() * 9999)}</span><span class="w-10 text-dos-dim">${rndHex()}</span><span class="flex-1 truncate">${SYSTEM_CMDS[Math.floor(Math.random() * SYSTEM_CMDS.length)]}</span>`;
+      procList.appendChild(line);
+      if (procList.children.length > 25)
+        procList.removeChild(procList.children[0]);
+    }, 400);
   }
-
-  function addProcLine() {
-    if (!procList) return;
-    const pid = Math.floor(Math.random() * 9000) + 100;
-    const user = SYSTEM_USERS[Math.floor(Math.random() * SYSTEM_USERS.length)];
-    const cpu = (Math.random() * 20).toFixed(1);
-    const cmd = SYSTEM_CMDS[Math.floor(Math.random() * SYSTEM_CMDS.length)];
-    const virt = rndHex();
-    const line = document.createElement("div");
-    line.className = `flex gap-2 whitespace-nowrap ${Math.random() > 0.8 ? "opacity-100 text-dos-primary/80" : "opacity-60"}`;
-    line.innerHTML = `<span class="w-8 text-dos-dim">${pid}</span><span class="w-10">${pad(user, 5)}</span><span class="w-10 text-dos-dim">${pad(virt, 6)}</span><span class="w-8">${pad(cpu, 4)}</span><span class="flex-1 truncate">${cmd}</span>`;
-    procList.appendChild(line);
-    if (procList.children.length > 25)
-      procList.removeChild(procList.children[0]);
-  }
-
   if (netLog) {
-    for (let i = 0; i < 20; i++) addNetLine();
-    setInterval(addNetLine, 300);
-  }
-
-  function addNetLine() {
-    if (!netLog) return;
-    const now = new Date();
-    const time = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}:${now.getSeconds().toString().padStart(2, "0")}`;
-    const ip = rndIP();
-    const port = [80, 443, 22, 3000][Math.floor(Math.random() * 4)];
-    const proto = NET_PROTO[Math.floor(Math.random() * NET_PROTO.length)];
-    const isWarn = Math.random() > 0.95;
-    const status = isWarn
-      ? "BLOCKED"
-      : NET_STATUS[Math.floor(Math.random() * NET_STATUS.length)];
-    const color = isWarn ? "text-dos-alert font-bold" : "text-dos-dim";
-    const line = document.createElement("div");
-    line.className = `flex justify-end gap-2 w-full whitespace-nowrap ${Math.random() > 0.9 ? "opacity-100" : "opacity-70"}`;
-    line.innerHTML = `<span class="text-dos-dim/40">[${time}]</span><span>${ip}:${port}</span><span class="text-dos-dim/60 w-8 text-center">${proto}</span><span class="${color} w-20 text-right">${status}</span>`;
-    netLog.appendChild(line);
-    if (netLog.children.length > 25) netLog.removeChild(netLog.children[0]);
+    setInterval(() => {
+      const line = document.createElement("div");
+      line.className = `flex justify-end gap-2 w-full whitespace-nowrap opacity-60`;
+      line.innerHTML = `<span>192.168.1.${Math.floor(Math.random() * 255)}</span><span class="text-dos-dim">ESTABLISHED</span>`;
+      netLog.appendChild(line);
+      if (netLog.children.length > 25) netLog.removeChild(netLog.children[0]);
+    }, 300);
   }
 </script>

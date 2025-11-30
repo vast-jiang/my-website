@@ -40,6 +40,8 @@ A retro-futuristic mini OS running in your browser.
 ### 📂 项目架构 (V3.0.0)
 
 项目采用领域驱动设计 (DDD)，结构清晰，易于维护：
+
+```
 /
 ├── public/                  # 静态资源 (图片、音乐、下载文件)
 ├── src/
@@ -55,6 +57,7 @@ A retro-futuristic mini OS running in your browser.
 │   ├── layouts/             # 页面基础布局
 │   └── pages/               # 路由页面 (首页, 标签页, RSS等)
 └── package.json
+```
 ### 🚀 快速开始
 
 在终端中运行以下命令：
@@ -131,19 +134,23 @@ It is not just a blog; it is a **Simulated Operating System** running in your br
 ### 📂 Project Structure (V3.0.0)
 
 Domain-Driven Design (DDD) structure for easy maintenance:
+```
 /
+├── public/                  # Static assets (images, music, downloads)
 ├── src/
-│   ├── components/          # UI Libraries
-│   │   ├── common/          # Atoms (Head, Image, Search)
-│   │   ├── dashboard/       # Widgets (Monitor, GuestBook, Gallery)
-│   │   ├── layout/          # Header, Footer
-│   │   └── system/          # Core (Console, CLI Logic, Audio)
+│   ├── components/          # UI Component Library
+│   │   ├── common/          # Atoms (SEO Head, Image, Search)
+│   │   ├── dashboard/       # Widgets (Monitor, GuestBook, Portfolio)
+│   │   ├── layout/          # Layout (Header, Footer)
+│   │   └── system/          # Core (Console, CLI Logic, Audio Player)
 │   ├── config/              # ⚙️ Configuration Center
-│   │   ├── site-config.ts   # User info, Socials, Giscus
-│   │   └── terminal-fs.ts   # VFS Definitions
-│   ├── content/             # Markdown Posts
-│   └── pages/               # Routes
+│   │   ├── site-config.ts   # Personal info, Socials, Giscus config
+│   │   └── terminal-fs.ts   # Virtual FS Definitions
+│   ├── content/             # Markdown Blog Posts
+│   ├── layouts/             # Page Layouts
+│   └── pages/               # Route Pages (Home, Tags, RSS, etc.)
 └── package.json
+```
 ### 🚀 Getting Started
 
 Run these commands in your terminal:

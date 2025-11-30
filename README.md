@@ -37,6 +37,8 @@ A retro-futuristic mini OS running in your browser.
 | **💬 通讯模块** | 集成 **Giscus** 评论系统，定制化**透明暗色主题**，完美融入玻璃面板。 |
 | **⚡ 极致性能** | 基于 **Astro v5** + **View Transitions**，实现 APP 般的无刷新流畅体验。 |
 
+![Project Structure](https://pibt.cpolar.cn/down/KGIcTpPoCO0r.webp)
+
 ### 📂 项目架构 (V3.0.0)
 
 项目采用领域驱动设计 (DDD)，结构清晰，易于维护：
